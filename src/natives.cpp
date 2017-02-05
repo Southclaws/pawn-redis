@@ -50,7 +50,7 @@ using std::string;
 using std::vector;
 
 #include "natives.hpp"
-#include "pawpy.hpp"
+#include "impl.hpp"
 
 
 cell Native::Connect(AMX *amx, cell *params)

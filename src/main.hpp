@@ -29,7 +29,6 @@
 #include <malloc.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include <direct.h>
 
 /*
 	Note:
