@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Pawpy - Python Utility for Pawn
+	Redis for SA:MP
 
 		Copyright (C) 2016 Barnaby "Southclaw" Keene
 
@@ -27,7 +27,33 @@
 ==============================================================================*/
 
 
-#ifndef PAWPY_H
-#define PAWPY_H
+#ifndef SAMP_REDIS_IMPL_H
+#define SAMP_REDIS_IMPL_H
+
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+#include "hiredis/hiredis.h"
+
+
+namespace Redisamp
+{
+
+int Connect(string hostname, int port, int timeout);
+int Disconnect(int context);
+int Command(string command);
+int Subscribe(int context, string channel, string callback);
+int Publish(int context, string channel, string data);
+
+void amx_tick(AMX* amx);
+
+extern vector<redisContext*> contexts;
+
+}
+
+
 
 #endif

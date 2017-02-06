@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Pawpy - Python Utility for Pawn
+	Redis for SA:MP
 
 		Copyright (C) 2016 Barnaby "Southclaw" Keene
 
@@ -53,24 +53,59 @@ using std::vector;
 #include "impl.hpp"
 
 
+/*
+	Note:
+	-
+*/
+vector<redisContext*> Contexts;
+
+/*
+	Note:
+	-
+
+	Parameters:
+	- `host[]`: hostname or ip of redis server
+	- `port`: port number for redis server
+	- `timeout`: connection timeout window
+
+	Return values:
+	- `0...`: Redis context ID
+	- `-1`: generic error
+	- `-2`: cannot allocate redis context
+*/
 cell Native::Connect(AMX *amx, cell *params)
 {
-	return 1;
+	redisContext *context;
+	string hostname = amx_GetCppString(amx, params[1]);
+	int port = params[2];
+	int timeout = params[3];
+
+	return Redisamp::Connect(hostname, port, timeout);
 }
 
+/*
+	Parameters:
+		context
+
+	Return values:
+		0  : success
+		!0 : failure
+*/
 cell Native::Disconnect(AMX *amx, cell *params)
 {
-	return 1;
+	int context_id = params[1];
+
+	return Redisamp::Disconnect(context_id);
 }
 
 cell Native::Command(AMX *amx, cell *params)
 {
-	return 1;
+	return 0;
 }
 
 cell Native::Subscribe(AMX* amx, cell *params)
 {
-	return 1;
+	return 0;
 }
 
 cell Native::Publish(AMX* amx, cell *params)

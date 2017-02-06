@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Pawpy - Python Utility for Pawn
+	Redis for SA:MP
 
 		Copyright (C) 2016 Barnaby "Southclaw" Keene
 
@@ -26,4 +26,77 @@
 ==============================================================================*/
 
 
-//
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+#include <sdk.hpp>
+
+#include "impl.hpp"
+
+
+int Redisamp::Connect(string hostname, int port, int timeout)
+{
+	struct timeval timeout_val = {timeout, 0};
+
+	redisContext *context = redisConnectWithTimeout(hostname.c_str(), port, timeout_val);
+
+	if (context == NULL || context->err)
+	{
+		if (context)
+		{
+			redisFree(context);
+			return -1;
+		}
+		else
+		{
+			return -2;
+		}
+		exit(1);
+	}
+
+	contexts.push_back(context);
+
+	// Position in the vector is our "ID", a common Pawn idiom since it doesn't
+	// have any concept of pointers so entities are generally referred to with
+	// a 0-n integer.
+	return ((int)contexts.size()) - 1;
+}
+
+int Redisamp::Disconnect(int context_id)
+{
+	if(!(context_id < contexts.size()))
+		return 1;
+
+	redisContext *context = contexts[context_id];
+
+	// hiredis is C so no nullptr
+	if(context == NULL)
+		return 2;
+
+	redisFree(context);
+
+	return 0;
+}
+
+int Redisamp::Command(string command)
+{
+	return 0;
+}
+
+int Redisamp::Subscribe(int context, string channel, string callback)
+{
+	return 0;
+}
+
+int Redisamp::Publish(int context, string channel, string data)
+{
+	return 0;
+}
+
+void Redisamp::amx_tick(AMX* amx)
+{
+	//
+}

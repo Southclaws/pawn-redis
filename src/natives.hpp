@@ -1,7 +1,7 @@
 /*==============================================================================
 
 
-	Pawpy - Python Utility for Pawn
+	Redis for SA:MP
 
 		Copyright (C) 2016 Barnaby "Southclaw" Keene
 
@@ -32,26 +32,21 @@
 ==============================================================================*/
 
 
-#ifndef PAWPY_NATIVES_H
-#define PAWPY_NATIVES_H
+#ifndef SAMP_REDIS_NATIVES_H
+#define SAMP_REDIS_NATIVES_H
 
-#include <string>
-#include <vector>
-
-using std::string;
-using std::vector;
-
-#include "main.hpp"
 #include <sdk.hpp>
 
 
 namespace Native 
 {
-	cell Connect(AMX *amx, cell *params);
-	cell Disconnect(AMX *amx, cell *params);
-	cell Command(AMX *amx, cell *params);
-	cell Subscribe(AMX *amx, cell *params);
-	cell Publish(AMX *amx, cell *params);
+
+cell Connect(AMX *amx, cell *params);
+cell Disconnect(AMX *amx, cell *params);
+cell Command(AMX *amx, cell *params);
+cell Subscribe(AMX *amx, cell *params);
+cell Publish(AMX *amx, cell *params);
+
 };
 
 #endif
