@@ -48,6 +48,8 @@ using std::vector;
 namespace Native 
 {
 	cell Connect(AMX *amx, cell *params);
+	cell Disconnect(AMX *amx, cell *params);
+	cell Command(AMX *amx, cell *params);
 	cell Subscribe(AMX *amx, cell *params);
 	cell Publish(AMX *amx, cell *params);
 };

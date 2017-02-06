@@ -58,6 +58,16 @@ cell Native::Connect(AMX *amx, cell *params)
 	return 1;
 }
 
+cell Native::Disconnect(AMX *amx, cell *params)
+{
+	return 1;
+}
+
+cell Native::Command(AMX *amx, cell *params)
+{
+	return 1;
+}
+
 cell Native::Subscribe(AMX* amx, cell *params)
 {
 	return 1;

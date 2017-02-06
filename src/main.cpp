@@ -187,6 +187,9 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 
 extern "C" const AMX_NATIVE_INFO native_list[] = 
 {
+	{"Redis_Connect", Native::Connect},
+	{"Redis_Disconnect", Native::Disconnect},
+	{"Redis_Command", Native::Command},
 	{"Redis_Subscribe", Native::Subscribe},
 	{"Redis_Publish", Native::Publish},
 	{NULL, NULL}
