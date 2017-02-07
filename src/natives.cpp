@@ -53,26 +53,6 @@ using std::vector;
 #include "impl.hpp"
 
 
-/*
-	Note:
-	-
-*/
-vector<redisContext*> Contexts;
-
-/*
-	Note:
-	-
-
-	Parameters:
-	- `host[]`: hostname or ip of redis server
-	- `port`: port number for redis server
-	- `timeout`: connection timeout window
-
-	Return values:
-	- `0...`: Redis context ID
-	- `-1`: generic error
-	- `-2`: cannot allocate redis context
-*/
 cell Native::Connect(AMX *amx, cell *params)
 {
 	redisContext *context;
@@ -83,14 +63,6 @@ cell Native::Connect(AMX *amx, cell *params)
 	return Redisamp::Connect(hostname, port, timeout);
 }
 
-/*
-	Parameters:
-		context
-
-	Return values:
-		0  : success
-		!0 : failure
-*/
 cell Native::Disconnect(AMX *amx, cell *params)
 {
 	int context_id = params[1];

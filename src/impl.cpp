@@ -27,16 +27,39 @@
 
 
 #include <string>
-#include <vector>
+#include <map>
 
 using std::string;
-using std::vector;
 
 #include <sdk.hpp>
 
 #include "impl.hpp"
 
 
+/*
+	Note:
+	Slightly hacky but it exposes a simple incrementing integer ID to Pawn
+	similar to the way SetTimer IDs are handled.
+*/
+int Redisamp::context_count;
+std::map<int, redisContext*> Redisamp::contexts;
+
+/*
+	Note:
+	Connects to the redis server. Returns negative values on errors, if
+	successful the returned value will represent a pseudo-ID which maps
+	internally to a Redis context.
+
+	Parameters:
+	- `host[]`: hostname or ip of redis server
+	- `port`: port number for redis server
+	- `timeout`: connection timeout window
+
+	Return values:
+	- `0...`: Redis context ID
+	- `-1`: generic error
+	- `-2`: cannot allocate redis context
+*/
 int Redisamp::Connect(string hostname, int port, int timeout)
 {
 	struct timeval timeout_val = {timeout, 0};
@@ -57,20 +80,23 @@ int Redisamp::Connect(string hostname, int port, int timeout)
 		exit(1);
 	}
 
-	contexts.push_back(context);
+	contexts[context_count] = context;
 
-	// Position in the vector is our "ID", a common Pawn idiom since it doesn't
-	// have any concept of pointers so entities are generally referred to with
-	// a 0-n integer.
-	return ((int)contexts.size()) - 1;
+	return context_count++;
 }
 
 int Redisamp::Disconnect(int context_id)
 {
-	if(!(context_id < contexts.size()))
-		return 1;
+	redisContext* context;
 
-	redisContext *context = contexts[context_id];
+	try
+	{
+		context = contexts.at(context_id);
+	}
+	catch(const std::out_of_range& e)
+	{
+		return 1;
+	}
 
 	// hiredis is C so no nullptr
 	if(context == NULL)
