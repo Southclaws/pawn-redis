@@ -1,8 +1,8 @@
 GPP = g++
-OUTFILE = "redis.so"
+OUTFILE = redis.so
 
-RED_DIR = "src/hiredis"
-SDK_DIR = "src/sdk"
+RED_DIR = src/hiredis
+SDK_DIR = src/sdk
 
 COMPILE_FLAGS = -fpermissive -fPIC -m32 -std=c++11 -c -O3 -w -D LINUX
 LINK_FLAGS = -Wl,--no-undefined -O2 -m32 -fshort-wchar -shared
@@ -12,23 +12,46 @@ TEST_SERVER_DIR = ../samp037svr_R2-1
 
 all: build
 
-build:
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/*.c
-	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/*.cpp
-	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/*.cpp
-	$(GPP) $(LINK_FLAGS) -o $(OUTFILE) *.o
-	rm *.o
 
-test: build
-	echo "'test' assumes valid SA:MP server exists at:"
-	echo $(TEST_SERVER_DIR)
-	echo "and that it's set to load any of the filterscripts named in the 'test' directory."
+build/amxplugin.o: $(SDK_DIR)/amxplugin.cpp
+	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/amxplugin.cpp -o build/amxplugin.o
+build/amxplugin2.o: $(SDK_DIR)/amxplugin2.cpp
+	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/amxplugin2.cpp -o build/amxplugin2.o
+
+build/async.o: $(RED_DIR)/async.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/async.c -o build/async.o
+build/dict.o: $(RED_DIR)/dict.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/dict.c -o build/dict.o
+build/hiredis.o: $(RED_DIR)/hiredis.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/hiredis.c -o build/hiredis.o
+build/net.o: $(RED_DIR)/net.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/net.c -o build/net.o
+build/read.o: $(RED_DIR)/read.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/read.c -o build/read.o
+build/sds.o: $(RED_DIR)/sds.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/sds.c -o build/sds.o
+build/test.o: $(RED_DIR)/test.c
+	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/test.c -o build/test.o
+
+build/impl.o: src/impl.cpp
+	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/impl.cpp -o build/impl.o
+build/main.o: src/main.cpp
+	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/main.cpp -o build/main.o
+build/natives.o: src/natives.cpp
+	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/natives.cpp -o build/natives.o
+
+$(OUTFILE): build/amxplugin.o build/amxplugin2.o build/async.o build/dict.o build/hiredis.o build/net.o build/read.o build/sds.o build/test.o build/impl.o build/main.o build/natives.o
+	$(GPP) $(LINK_FLAGS) -o $(OUTFILE) build/*.o
+
+test: $(OUTFILE)
+	# 'test' assumes valid SA:MP server exists at:
+	# $(TEST_SERVER_DIR)
+	# and that it's set to load any of the filterscripts named in the 'test' directory.
 	# copy the test AMX to filterscripts
 	cp test/test_connect.amx $(TEST_SERVER_DIR)/filterscripts/test_connect.amx
 	# copy the plugin binary to plugins directory
 	cp $(OUTFILE) $(TEST_SERVER_DIR)/plugins/$(OUTFILE)
-	# run the server
-	$(TEST_SERVER_DIR)/samp03svr
+	# now run the server
 
 clean:
 	-rm *~ *.o *.so
