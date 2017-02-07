@@ -43,7 +43,7 @@ namespace Redisamp
 
 int Connect(string hostname, int port, int timeout);
 int Disconnect(int context);
-int Command(string command);
+int Command(int context, string command);
 int Subscribe(int context, string channel, string callback);
 int Publish(int context, string channel, string data);
 

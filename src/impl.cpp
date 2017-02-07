@@ -98,7 +98,6 @@ int Redisamp::Disconnect(int context_id)
 		return 1;
 	}
 
-	// hiredis is C so no nullptr
 	if(context == NULL)
 		return 2;
 
@@ -109,8 +108,31 @@ int Redisamp::Disconnect(int context_id)
 	return 0;
 }
 
-int Redisamp::Command(string command)
+int Redisamp::Command(int context_id, string command)
 {
+	redisContext* context;
+
+	try
+	{
+		context = contexts.at(context_id);
+	}
+	catch(const std::out_of_range& e)
+	{
+		return -1;
+	}
+
+	if(context == NULL)
+		return -2;
+
+	redisReply *reply = redisCommand(context, command.c_str());
+
+	if(reply == NULL)
+	{
+		return reply->type;
+	}
+
+    freeReplyObject(reply);
+
 	return 0;
 }
 
