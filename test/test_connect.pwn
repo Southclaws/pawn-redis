@@ -14,7 +14,9 @@ public OnFilterScriptInit()
 
 	print("Sleeping for a second...");
 
-	sleep(3);
+	new now = GetTickCount();
+	while(now + 1000 > GetTickCount())
+		continue;
 
 	print("Disconnecting, bye!");
 	Redis_Disconnect(context);
