@@ -19,8 +19,8 @@
 		with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	Note:
-		This file contains the actual Python calling code, thread code and all
-		other features specific to the plugin.
+		This file contains the actual Redis implementation code including the
+		subscribe threading and callback mechanism.
 
 
 ==============================================================================*/
