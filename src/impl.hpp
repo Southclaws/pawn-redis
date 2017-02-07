@@ -31,10 +31,9 @@
 #define SAMP_REDIS_IMPL_H
 
 #include <string>
-#include <vector>
+#include <map>
 
 using std::string;
-using std::vector;
 
 #include "hiredis/hiredis.h"
 
@@ -50,7 +49,8 @@ int Publish(int context, string channel, string data);
 
 void amx_tick(AMX* amx);
 
-extern vector<redisContext*> contexts;
+extern int context_count;
+extern std::map<int, redisContext*> contexts;
 
 }
 
