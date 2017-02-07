@@ -12,9 +12,9 @@ public OnFilterScriptInit()
 
 	printf("Connected, context ID: %d", _:context);
 
-	print("Sleeping for a seconds...");
+	print("Sleeping for a second...");
 
-	sleep(1);
+	sleep(3);
 
 	print("Disconnecting, bye!");
 	Redis_Disconnect(context);
