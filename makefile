@@ -10,9 +10,6 @@ LINK_FLAGS = -Wl,--no-undefined -O2 -m32 -fshort-wchar -shared
 TEST_SERVER_DIR = ../samp037svr_R2-1
 
 
-all: build
-
-
 build/amxplugin.o: $(SDK_DIR)/amxplugin.cpp
 	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/amxplugin.cpp -o build/amxplugin.o
 build/amxplugin2.o: $(SDK_DIR)/amxplugin2.cpp
@@ -43,6 +40,8 @@ build/natives.o: src/natives.cpp
 $(OUTFILE): build/amxplugin.o build/amxplugin2.o build/async.o build/dict.o build/hiredis.o build/net.o build/read.o build/sds.o build/test.o build/impl.o build/main.o build/natives.o
 	$(GPP) $(LINK_FLAGS) -o $(OUTFILE) build/*.o
 
+all: $(OUTFILE)
+
 test: $(OUTFILE)
 	# 'test' assumes valid SA:MP server exists at:
 	# $(TEST_SERVER_DIR)
@@ -54,4 +53,4 @@ test: $(OUTFILE)
 	# now run the server
 
 clean:
-	-rm *~ *.o *.so
+	-rm build/*.o *.so

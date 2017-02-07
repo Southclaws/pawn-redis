@@ -104,6 +104,8 @@ int Redisamp::Disconnect(int context_id)
 
 	redisFree(context);
 
+	contexts.erase(context_id);
+
 	return 0;
 }
 

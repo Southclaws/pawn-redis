@@ -12,12 +12,12 @@ public OnFilterScriptInit()
 
 	printf("Connected, context ID: %d", _:context);
 
-	print("Sleeping for a second...");
-
-	new now = GetTickCount();
-	while(now + 1000 > GetTickCount())
-		continue;
-
 	print("Disconnecting, bye!");
-	Redis_Disconnect(context);
+	new ret;
+	ret = Redis_Disconnect(context);
+	printf("returned: %d", ret);
+
+	printf("attempting to disconnect from same context, this should return an error");
+	ret = Redis_Disconnect(context);
+	printf("returned: %d", ret);
 }
