@@ -5,7 +5,6 @@
 //
 //----------------------------------------------------------
 
-#define HAVE_STDINT_H
 #include <cstring>
 #include <cstdlib>
 
@@ -73,27 +72,40 @@ int AMXAPI amx_GetCString(AMX *amx, cell param, char *&dest)
 	return 0;
 }
 
-void AMXAPI amx_SetCString(AMX *amx, cell param, const char *str, int len) 
+int AMXAPI amx_SetCString(AMX *amx, cell param, const char *str, int len) 
 {
 	cell *dest;
-	amx_GetAddr(amx, param, &dest);
-	amx_SetString(dest, str, 0, 0, len);
+	int error;
+	if ((error = amx_GetAddr(amx, param, &dest)) != AMX_ERR_NONE)
+		return error;
+
+	return amx_SetString(dest, str, 0, 0, len);
 }
 
 #if defined __cplusplus
 
 std::string AMXAPI amx_GetCppString(AMX *amx, cell param) 
 {
-	char *tmp;
-	amx_StrParam(amx, param, tmp);
-	return (tmp != NULL) ? tmp : std::string();
+	cell *addr = nullptr;
+	amx_GetAddr(amx, param, &addr);
+
+	int len = 0;
+	amx_StrLen(addr, &len);
+
+	std::string string(len, ' ');
+	amx_GetString(&string[0], addr, 0, len + 1);
+
+	return string;
 }
 
-void AMXAPI amx_SetCppString(AMX *amx, cell param, const std::string &str, size_t maxlen) 
+int AMXAPI amx_SetCppString(AMX *amx, cell param, const std::string &str, size_t maxlen)
 {
-	cell *dest;
-	amx_GetAddr(amx, param, &dest);
-	amx_SetString(dest, str.c_str(), 0, 0, maxlen);
+	cell *dest = nullptr;
+	int error;
+	if ((error = amx_GetAddr(amx, param, &dest)) != AMX_ERR_NONE)
+		return error;
+
+	return amx_SetString(dest, str.c_str(), 0, 0, maxlen);
 }
 
 #endif // __cplusplus
