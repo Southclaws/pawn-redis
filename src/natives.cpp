@@ -77,6 +77,28 @@ cell Native::Command(AMX *amx, cell *params)
 	return Redisamp::Command(context_id, command);
 }
 
+cell Native::SetString(AMX *amx, cell *params)
+{
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	string value = amx_GetCppString(amx, params[3]);
+
+	return Redisamp::SetString(context_id, key, value);
+}
+
+cell Native::GetString(AMX *amx, cell *params)
+{
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	string value;
+	int ret;
+
+	ret = Redisamp::GetString(context_id, key, value);
+	cell res = amx_SetCppString(amx, params[3], value, params[4]);
+
+	return ret;
+}
+
 cell Native::Subscribe(AMX* amx, cell *params)
 {
 	return 0;

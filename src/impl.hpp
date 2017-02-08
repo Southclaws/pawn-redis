@@ -42,26 +42,24 @@ using std::string;
 
 #define REDIS_ERROR_CONNECT_GENERIC			(-1)
 #define REDIS_ERROR_CONNECT_FAIL			(-2)
-#define REDIS_ERROR_CONTEXT_INVALID_ID		(1)
-#define REDIS_ERROR_CONTEXT_MISSING_POINTER	(2)
-#define REDIS_ERROR_REPLY_OFFSET
-
-// #define REDIS_REPLY_STRING				(1)
-// #define REDIS_REPLY_ARRAY				(2)
-// #define REDIS_REPLY_INTEGER				(3)
-// #define REDIS_REPLY_NIL					(4)
-// #define REDIS_REPLY_STATUS				(5)
-// #define REDIS_REPLY_ERROR				(6)
+#define REDIS_ERROR_CONTEXT_INVALID_ID		(10)
+#define REDIS_ERROR_CONTEXT_MISSING_POINTER	(20)
+#define REDIS_ERROR_COMMAND_BAD_REPLY		(30)
+#define REDIS_ERROR_COMMAND_NO_REPLY		(40)
 
 
 namespace Redisamp
 {
 
 int Connect(string hostname, int port, int timeout);
-int Disconnect(int context);
-int Command(int context, string command);
-int Subscribe(int context, string channel, string callback);
-int Publish(int context, string channel, string data);
+int Disconnect(int context_id);
+
+int Command(int context_id, string command);
+int SetString(int context_id, string key, string value);
+int GetString(int context_id, string key, string& value);
+
+int Subscribe(int context_id, string channel, string callback);
+int Publish(int context_id, string channel, string data);
 
 void amx_tick(AMX* amx);
 int contextFromId(int context_id, redisContext*& context);
@@ -70,7 +68,5 @@ extern int context_count;
 extern std::map<int, redisContext*> contexts;
 
 }
-
-
 
 #endif

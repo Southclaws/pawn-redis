@@ -22,8 +22,26 @@
 ==============================================================================*/
 
 
+#define REDIS_ERROR_CONNECT_GENERIC			(-1)
+#define REDIS_ERROR_CONNECT_FAIL			(-2)
+#define REDIS_ERROR_CONTEXT_INVALID_ID		(10)
+#define REDIS_ERROR_CONTEXT_MISSING_POINTER	(20)
+#define REDIS_ERROR_COMMAND_BAD_REPLY		(30)
+#define REDIS_ERROR_COMMAND_NO_REPLY		(40)
+
+#define REDIS_REPLY_STRING					(1)
+#define REDIS_REPLY_ARRAY					(2)
+#define REDIS_REPLY_INTEGER					(3)
+#define REDIS_REPLY_NIL						(4)
+#define REDIS_REPLY_STATUS					(5)
+#define REDIS_REPLY_ERROR					(6)
+
 native Redis:Redis_Connect(host[], port, timeout);
 native Redis_Disconnect(Redis:context);
+
 native Redis_Command(Redis:context, command[]);
+native Redis_SetString(Redis:context, key[], value[]);
+native Redis_GetString(Redis:context, key[], value[], len);
+
 native Redis_Subscribe(Redis:context, channel[], callback[]);
 native Redis_Publish(Redis:context, channel[], data[]);

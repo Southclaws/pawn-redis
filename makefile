@@ -49,6 +49,7 @@ test: $(OUTFILE)
 	# copy the test AMX to filterscripts
 	cp test/test_connect.amx $(TEST_SERVER_DIR)/filterscripts/test_connect.amx
 	cp test/test_command_1.amx $(TEST_SERVER_DIR)/filterscripts/test_command_1.amx
+	cp test/test_setget_string_1.amx $(TEST_SERVER_DIR)/filterscripts/test_setget_string_1.amx
 	# copy the plugin binary to plugins directory
 	cp $(OUTFILE) $(TEST_SERVER_DIR)/plugins/$(OUTFILE)
 	# now run the server
