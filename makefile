@@ -43,14 +43,9 @@ $(OUTFILE): build/amxplugin.o build/amxplugin2.o build/async.o build/dict.o buil
 all: $(OUTFILE)
 
 test: $(OUTFILE)
-	# 'test' assumes valid SA:MP server exists at:
-	# $(TEST_SERVER_DIR)
-	# and that it's set to load any of the filterscripts named in the 'test' directory.
-	# copy the test AMX to filterscripts
-	cp test/test_connect.amx $(TEST_SERVER_DIR)/filterscripts/test_connect.amx
-	cp test/test_command_1.amx $(TEST_SERVER_DIR)/filterscripts/test_command_1.amx
-	cp test/test_setget_string_1.amx $(TEST_SERVER_DIR)/filterscripts/test_setget_string_1.amx
-	# copy the plugin binary to plugins directory
+	# 'test' assumes valid SA:MP server exists at: $(TEST_SERVER_DIR)
+	# and it's configured to load the `samp-redis-tests` gamemode script.
+	cp test/samp-redis-tests.amx $(TEST_SERVER_DIR)/gamemodes/samp-redis-tests.amx
 	cp $(OUTFILE) $(TEST_SERVER_DIR)/plugins/$(OUTFILE)
 	# now run the server
 
