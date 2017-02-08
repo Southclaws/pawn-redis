@@ -55,7 +55,6 @@ using std::vector;
 
 cell Native::Connect(AMX *amx, cell *params)
 {
-	redisContext *context;
 	string hostname = amx_GetCppString(amx, params[1]);
 	int port = params[2];
 	int timeout = params[3];
@@ -72,7 +71,10 @@ cell Native::Disconnect(AMX *amx, cell *params)
 
 cell Native::Command(AMX *amx, cell *params)
 {
-	return 0;
+	int context_id = params[1];
+	string command = amx_GetCppString(amx, params[2]);
+
+	return Redisamp::Command(context_id, command);
 }
 
 cell Native::Subscribe(AMX* amx, cell *params)

@@ -70,12 +70,13 @@ int Redisamp::Connect(string hostname, int port, int timeout)
 	{
 		if (context)
 		{
+			logprintf("Redis error: %s", context->errstr);
 			redisFree(context);
-			return -1;
+			return REDIS_ERROR_CONNECT_GENERIC;
 		}
 		else
 		{
-			return -2;
+			return REDIS_ERROR_CONNECT_FAIL;
 		}
 		exit(1);
 	}
@@ -87,19 +88,10 @@ int Redisamp::Connect(string hostname, int port, int timeout)
 
 int Redisamp::Disconnect(int context_id)
 {
-	redisContext* context;
-
-	try
-	{
-		context = contexts.at(context_id);
-	}
-	catch(const std::out_of_range& e)
-	{
-		return 1;
-	}
-
-	if(context == NULL)
-		return 2;
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
 
 	redisFree(context);
 
@@ -110,30 +102,23 @@ int Redisamp::Disconnect(int context_id)
 
 int Redisamp::Command(int context_id, string command)
 {
-	redisContext* context;
-
-	try
-	{
-		context = contexts.at(context_id);
-	}
-	catch(const std::out_of_range& e)
-	{
-		return -1;
-	}
-
-	if(context == NULL)
-		return -2;
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
 
 	redisReply *reply = redisCommand(context, command.c_str());
+	int result = 0;
 
 	if(reply == NULL)
 	{
-		return reply->type;
+		logprintf("Redis error: %s", context->errstr);
+		result = context->err;
 	}
 
     freeReplyObject(reply);
 
-	return 0;
+	return result;
 }
 
 int Redisamp::Subscribe(int context, string channel, string callback)
@@ -149,4 +134,21 @@ int Redisamp::Publish(int context, string channel, string data)
 void Redisamp::amx_tick(AMX* amx)
 {
 	//
+}
+
+int Redisamp::contextFromId(int context_id, redisContext *& context)
+{
+	try
+	{
+		context = contexts.at(context_id);
+	}
+	catch(const std::out_of_range& e)
+	{
+		return REDIS_ERROR_CONTEXT_INVALID_ID;
+	}
+
+	if(context == NULL)
+		return REDIS_ERROR_CONTEXT_MISSING_POINTER;
+
+	return 0;
 }

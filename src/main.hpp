@@ -32,23 +32,20 @@
 ==============================================================================*/
 
 
-#ifndef SAMP_REDIS_NATIVES_H
-#define SAMP_REDIS_NATIVES_H
+/*
+	Note:
+	Wraps the logprintf function.
+*/
+void logprintf(const char* message, ...);
 
-#include <sdk.hpp>
-
-#include "main.hpp"
-
-
-namespace Native 
-{
-
-cell Connect(AMX *amx, cell *params);
-cell Disconnect(AMX *amx, cell *params);
-cell Command(AMX *amx, cell *params);
-cell Subscribe(AMX *amx, cell *params);
-cell Publish(AMX *amx, cell *params);
-
-};
-
+/*
+	Note:
+	Lazy debug mode. When VS is out of debug mode, the debug calls are ignored
+	from compilation completely. This method means there are no #if directives
+	littered around the code.
+*/
+#ifdef _DEBUG
+#define debug(message, ...) logprintf(message, __VA_ARGS__)
+#else
+#define debug(message, ...)
 #endif

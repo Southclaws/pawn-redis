@@ -34,6 +34,7 @@ using std::set;
 #include "hiredis/hiredis.h"
 #include <sdk.hpp>
 
+#include "main.hpp"
 #include "natives.hpp"
 #include "impl.hpp"
 
@@ -46,7 +47,7 @@ using std::set;
 
 
 extern void	*pAMXFunctions;
-logprintf_t logprintf;
+logprintf_t logprintf_fp;
 
 /*
 	Note:
@@ -62,7 +63,7 @@ set<AMX*> amx_list;
 PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData) 
 {
 	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
-	logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
+	logprintf_fp = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
 
 	logprintf("\n");
 	logprintf("SA:MP Redis - Redis for SA:MP by Southclaw");
@@ -88,6 +89,21 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 	for(AMX* i : amx_list)
 	{
 	}
+}
+
+void logprintf(const char* message, ...)
+{
+	unsigned int len = 256;
+	char* result = new char[len];
+
+	va_list args;
+	va_start(args, message);
+
+	vsnprintf(result, len, message, args);
+	logprintf_fp(result);
+
+	va_end(args);
+	delete result;
 }
 
 
