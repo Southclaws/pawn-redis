@@ -28,6 +28,7 @@
 
 #include <string>
 #include <map>
+#include <thread>
 
 using std::string;
 
@@ -43,6 +44,12 @@ using std::string;
 */
 int Redisamp::context_count;
 std::map<int, redisContext*> Redisamp::contexts;
+
+/*
+	Note:
+	Stores a list of active subscriptions
+*/
+std::map<string, Redisamp::subscription> Redisamp::subscriptions;
 
 /*
 	Note:
@@ -317,9 +324,68 @@ int Redisamp::GetFloat(int context_id, string key, float &value)
 }
 
 
-int Redisamp::Subscribe(int context, string channel, string callback)
+int Redisamp::Subscribe(int context_id, string channel, string callback)
 {
-	return 0;
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	int result;
+	redisReply *reply = redisCommand(context, "SUBSCRIBE %s", channel.c_str());
+
+	if(reply == NULL)
+	{
+		logprintf("Redis error: %s", context->errstr);
+		result = context->err;
+	}
+
+	freeReplyObject(reply);
+
+	std::thread* thr = nullptr;
+
+	thr = new std::thread(subscribe, context, channel);
+	logprintf("thread started");
+
+	if(thr == nullptr)
+	{
+		logprintf("unable to create thread for Redis subscribe");
+		result = REDIS_ERROR_SUBSCRIBE_THREAD_ERROR;
+	}
+	else
+	{
+		logprintf("sub created, channel %s", channel.c_str());
+		subscription s;
+		s.thread_id = thr->get_id();
+		s.channel = channel;
+		s.callback = callback;
+
+		subscriptions[channel] = s;
+
+		thr->detach();
+
+		delete thr;
+	}
+	logprintf("finished");
+	return result;
+}
+
+void Redisamp::subscribe(string channel)
+{
+	// todo: new context for each thread.
+	redisReply *reply;
+
+	struct timeval timeval = {1, 0};
+	redisSetTimeout(context, timeval);
+
+	logprintf("subscribed to %s", channel.c_str());
+
+	while(redisGetReply(context, &reply) == REDIS_OK)
+	{
+		logprintf(reply->type);
+		logprintf(reply->str);
+		freeReplyObject(reply);
+	}
 }
 
 int Redisamp::Publish(int context, string channel, string data)

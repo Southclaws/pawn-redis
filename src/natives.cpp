@@ -153,7 +153,11 @@ cell Native::GetFloat(AMX *amx, cell *params)
 
 cell Native::Subscribe(AMX* amx, cell *params)
 {
-	return 0;
+	int context_id = params[1];
+	string channel = amx_GetCppString(amx, params[2]);
+	string callback = amx_GetCppString(amx, params[3]);
+
+	return Redisamp::Subscribe(context_id, channel, callback);
 }
 
 cell Native::Publish(AMX* amx, cell *params)

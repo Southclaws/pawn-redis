@@ -32,6 +32,7 @@
 
 #include <string>
 #include <map>
+#include <thread>
 
 using std::string;
 
@@ -46,6 +47,7 @@ using std::string;
 #define REDIS_ERROR_CONTEXT_MISSING_POINTER	(20)
 #define REDIS_ERROR_COMMAND_BAD_REPLY		(30)
 #define REDIS_ERROR_COMMAND_NO_REPLY		(40)
+#define REDIS_ERROR_SUBSCRIBE_THREAD_ERROR	(50)
 
 
 namespace Redisamp
@@ -65,11 +67,24 @@ int GetFloat(int context_id, string key, float &value);
 int Subscribe(int context_id, string channel, string callback);
 int Publish(int context_id, string channel, string data);
 
+void subscribe(redisContext* context, string channel);
 void amx_tick(AMX* amx);
 int contextFromId(int context_id, redisContext*& context);
 
+/*
+	Note:
+	A subscription represents an active waiting channel.
+*/
+struct subscription
+{
+	std::thread::id thread_id;
+	string channel;
+	string callback;
+};
+
 extern int context_count;
 extern std::map<int, redisContext*> contexts;
+extern std::map<string, Redisamp::subscription> subscriptions;
 
 }
 

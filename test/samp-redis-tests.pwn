@@ -138,3 +138,29 @@ TestClose:SetThenGetFloat()
 {
 	Redis_Disconnect(context);
 }
+
+
+/*
+	Subscribe to a 
+*/
+TestInit:Subscribe()
+{
+	context = Redis_Connect("localhost", 6379, 1);
+}
+
+Test:Subscribe()
+{
+	new ret = Redis_Subscribe(context, "samp.test.1", "Recieve");
+	ASSERT(ret == 0);
+}
+
+TestClose:Subscribe()
+{
+	Redis_Disconnect(context);
+}
+
+forward Recieve(data[]);
+public Recieve(data[])
+{
+	printf("Recieve called with data: '%s'", data);
+}
