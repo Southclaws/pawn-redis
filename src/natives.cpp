@@ -95,29 +95,59 @@ cell Native::GetString(AMX *amx, cell *params)
 	int ret;
 
 	ret = Redisamp::GetString(context_id, key, value);
-	cell res = amx_SetCppString(amx, params[3], value, params[4]);
+	amx_SetCppString(amx, params[3], value, params[4]);
 
 	return ret;
 }
 
 cell Native::SetInt(AMX *amx, cell *params)
 {
-	return 0;
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	int value = params[3];
+
+	return Redisamp::SetInt(context_id, key, value);
 }
 
 cell Native::GetInt(AMX *amx, cell *params)
 {
-	return 0;
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	int value;
+	int ret;
+
+	ret = Redisamp::GetInt(context_id, key, value);
+
+	cell *address;
+	amx_GetAddr(amx, params[3], &address);
+	*address = value;
+
+	return ret;
 }
 
 cell Native::SetFloat(AMX *amx, cell *params)
 {
-	return 0;
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	float value = *(float*)&params[3]; // weird float conversion
+
+	return Redisamp::SetFloat(context_id, key, value);
 }
 
 cell Native::GetFloat(AMX *amx, cell *params)
 {
-	return 0;
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	float value;
+	int ret;
+
+	ret = Redisamp::GetFloat(context_id, key, value);
+
+	cell *address;
+	amx_GetAddr(amx, params[3], &address);
+	*address = amx_ftoc(value);
+
+	return ret;
 }
 
 

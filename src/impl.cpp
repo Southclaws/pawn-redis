@@ -243,7 +243,7 @@ int Redisamp::GetInt(int context_id, string key, int &value)
 	}
 	else
 	{
-		value = string(reply->str);
+		value = atoi(reply->str);
 	}
 
 	freeReplyObject(reply);
@@ -253,12 +253,67 @@ int Redisamp::GetInt(int context_id, string key, int &value)
 
 int Redisamp::SetFloat(int context_id, string key, float value)
 {
-	return 0;
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	redisReply *reply = redisCommand(context, "SET %s %f", key.c_str(), value);
+	int result = 0;
+
+	if(reply == NULL)
+	{
+		logprintf("Redis error: %s", context->errstr);
+		result = context->err;
+	}
+	if(reply->type != REDIS_REPLY_STATUS)
+	{
+		logprintf("Redis reply error: %s", reply->str);
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+
+	freeReplyObject(reply);
+
+	return result;
 }
 
 int Redisamp::GetFloat(int context_id, string key, float &value)
 {
-	return 0;
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	redisReply *reply = redisCommand(context, "GET %s", key.c_str());
+	int result = 0;
+
+	if(reply == NULL)
+	{
+		logprintf("Redis error: %s", context->errstr);
+		result = context->err;
+	}
+	else if(reply->type == REDIS_REPLY_NIL)
+	{
+		logprintf("expected string reply but got nil");
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+	else if(reply->type != REDIS_REPLY_STRING)
+	{
+		logprintf("expected string reply but got %d", reply->type);
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+	else if(reply->len <= 0)
+	{
+		result = REDIS_ERROR_COMMAND_NO_REPLY;
+	}
+	else
+	{
+		value = atof(reply->str);
+	}
+
+	freeReplyObject(reply);
+
+	return result;
 }
 
 
