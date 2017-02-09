@@ -9,6 +9,8 @@ LINK_FLAGS = -Wl,--no-undefined -O2 -m32 -fshort-wchar -shared
 
 TEST_SERVER_DIR = ../samp037svr_R2-1
 
+.DEFAULT_GOAL = test
+
 
 build/amxplugin.o: $(SDK_DIR)/amxplugin.cpp
 	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/amxplugin.cpp -o build/amxplugin.o
