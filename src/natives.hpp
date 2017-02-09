@@ -49,6 +49,10 @@ cell Disconnect(AMX *amx, cell *params);
 cell Command(AMX *amx, cell *params);
 cell SetString(AMX *amx, cell *params);
 cell GetString(AMX *amx, cell *params);
+cell SetInt(AMX *amx, cell *params);
+cell GetInt(AMX *amx, cell *params);
+cell SetFloat(AMX *amx, cell *params);
+cell GetFloat(AMX *amx, cell *params);
 
 cell Subscribe(AMX *amx, cell *params);
 cell Publish(AMX *amx, cell *params);

@@ -42,6 +42,10 @@ native Redis_Disconnect(Redis:context);
 native Redis_Command(Redis:context, command[]);
 native Redis_SetString(Redis:context, key[], value[]);
 native Redis_GetString(Redis:context, key[], value[], len);
+native Redis_SetInt(Redis:context, key[], value[]);
+native Redis_GetInt(Redis:context, key[], value[]);
+native Redis_SetFloat(Redis:context, key[], Float:value[]);
+native Redis_GetFloat(Redis:context, key[], Float:value[]);
 
 native Redis_Subscribe(Redis:context, channel[], callback[]);
 native Redis_Publish(Redis:context, channel[], data[]);

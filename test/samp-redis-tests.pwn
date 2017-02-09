@@ -76,3 +76,65 @@ TestClose:SetThenGetString()
 {
 	Redis_Disconnect(context);
 }
+
+
+/*
+	Set a string key then get it and compare the value.
+*/
+TestInit:SetThenGetInt()
+{
+	context = Redis_Connect("localhost", 6379, 1);
+}
+
+Test:SetThenGetInt()
+{
+	new ret = Redis_SetInt(context, "test", 42);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	new want = 42;
+	new got;
+
+	ret = Redis_GetInt(context, "test", got);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	printf("want: '%d' got: '%d'", want, got);
+	ASSERT(want == got);
+}
+
+TestClose:SetThenGetInt()
+{
+	Redis_Disconnect(context);
+}
+
+
+/*
+	Set a string key then get it and compare the value.
+*/
+TestInit:SetThenGetFloat()
+{
+	context = Redis_Connect("localhost", 6379, 1);
+}
+
+Test:SetThenGetFloat()
+{
+	new ret = Redis_SetFloat(context, "test", 77.653);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	new Float:want = 77.653;
+	new Float:got;
+
+	ret = Redis_GetFloat(context, "test", got);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	printf("want: '%f' got: '%f'", want, got);
+	ASSERT(want == got);
+}
+
+TestClose:SetThenGetFloat()
+{
+	Redis_Disconnect(context);
+}

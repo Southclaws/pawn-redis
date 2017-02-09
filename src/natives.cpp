@@ -69,6 +69,7 @@ cell Native::Disconnect(AMX *amx, cell *params)
 	return Redisamp::Disconnect(context_id);
 }
 
+
 cell Native::Command(AMX *amx, cell *params)
 {
 	int context_id = params[1];
@@ -98,6 +99,27 @@ cell Native::GetString(AMX *amx, cell *params)
 
 	return ret;
 }
+
+cell Native::SetInt(AMX *amx, cell *params)
+{
+	return 0;
+}
+
+cell Native::GetInt(AMX *amx, cell *params)
+{
+	return 0;
+}
+
+cell Native::SetFloat(AMX *amx, cell *params)
+{
+	return 0;
+}
+
+cell Native::GetFloat(AMX *amx, cell *params)
+{
+	return 0;
+}
+
 
 cell Native::Subscribe(AMX* amx, cell *params)
 {

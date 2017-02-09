@@ -133,13 +133,13 @@ int Redisamp::SetString(int context_id, string key, string value)
 
 	if(reply == NULL)
 	{
-		logprintf("Redis error: %s", context->errstr);
+		logprintf("Redis context error: %s", context->errstr);
 		result = context->err;
 	}
 	if(reply->type != REDIS_REPLY_STATUS)
 	{
-		logprintf(reply->str);
-		return REDIS_ERROR_COMMAND_BAD_REPLY;
+		logprintf("Redis reply error: %s", reply->str);
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
 	}
 
 	freeReplyObject(reply);
@@ -148,6 +148,71 @@ int Redisamp::SetString(int context_id, string key, string value)
 }
 
 int Redisamp::GetString(int context_id, string key, string& value)
+{
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	redisReply *reply = redisCommand(context, "GET %s", key.c_str());
+	int result = 0;
+
+	if(reply == NULL)
+	{
+		logprintf("Redis context error: %s", context->errstr);
+		result = context->err;
+	}
+	else if(reply->type == REDIS_REPLY_NIL)
+	{
+		logprintf("expected string reply but got nil");
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+	else if(reply->type != REDIS_REPLY_STRING)
+	{
+		logprintf("expected string reply but got %d", reply->type);
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+	else if(reply->len <= 0)
+	{
+		result = REDIS_ERROR_COMMAND_NO_REPLY;
+	}
+	else
+	{
+		value = string(reply->str);
+	}
+
+	freeReplyObject(reply);
+
+	return result;
+}
+
+int Redisamp::SetInt(int context_id, string key, int value)
+{
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	redisReply *reply = redisCommand(context, "SET %s %d", key.c_str(), value);
+	int result = 0;
+
+	if(reply == NULL)
+	{
+		logprintf("Redis error: %s", context->errstr);
+		result = context->err;
+	}
+	if(reply->type != REDIS_REPLY_STATUS)
+	{
+		logprintf("Redis reply error: %s", reply->str);
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+
+	freeReplyObject(reply);
+
+	return result;
+}
+
+int Redisamp::GetInt(int context_id, string key, int &value)
 {
 	redisContext* context = NULL;
 	int err = contextFromId(context_id, context);
@@ -185,6 +250,17 @@ int Redisamp::GetString(int context_id, string key, string& value)
 
 	return result;
 }
+
+int Redisamp::SetFloat(int context_id, string key, float value)
+{
+	return 0;
+}
+
+int Redisamp::GetFloat(int context_id, string key, float &value)
+{
+	return 0;
+}
+
 
 int Redisamp::Subscribe(int context, string channel, string callback)
 {

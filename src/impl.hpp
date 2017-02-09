@@ -57,6 +57,10 @@ int Disconnect(int context_id);
 int Command(int context_id, string command);
 int SetString(int context_id, string key, string value);
 int GetString(int context_id, string key, string& value);
+int SetInt(int context_id, string key, int value);
+int GetInt(int context_id, string key, int value);
+int SetFloat(int context_id, string key, float value);
+int GetFloat(int context_id, string key, float value);
 
 int Subscribe(int context_id, string channel, string callback);
 int Publish(int context_id, string channel, string data);

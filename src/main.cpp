@@ -133,7 +133,10 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	{"Redis_Command", Native::Command},
 	{"Redis_SetString", Native::SetString},
 	{"Redis_GetString", Native::GetString},
-
+	{"Redis_SetInt", Native::SetInt},
+	{"Redis_GetInt", Native::GetInt},
+	{"Redis_SetFloat", Native::SetFloat},
+	{"Redis_GetFloat", Native::GetFloat},
 	{"Redis_Subscribe", Native::Subscribe},
 	{"Redis_Publish", Native::Publish},
 
