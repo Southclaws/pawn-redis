@@ -53,6 +53,28 @@ using std::string;
 namespace Redisamp
 {
 
+/*
+	Note:
+	A subscription represents an active waiting channel.
+	Since a new context must exist for each thread, I decided not to offload
+	that responsibility to the user so the plugin internally derives a new
+	context from the parent context upon subscription creation. It's likely
+	that most users will only have a single connection anyway so it's best to
+	keep it all under one single context ID in Pawn space.
+
+	Since subscriptions are mapped by channel and multiple subscriptions to the
+	same channel is illogical, this makes finding an existing subscription
+	trivial.
+*/
+struct subscription
+{
+	redisContext* parent;
+	redisContext* context;
+	std::thread::id thread_id;
+	string channel;
+	string callback;
+};
+
 int Connect(string hostname, int port, int timeout);
 int Disconnect(int context_id);
 
@@ -65,22 +87,12 @@ int SetFloat(int context_id, string key, float value);
 int GetFloat(int context_id, string key, float &value);
 
 int Subscribe(int context_id, string channel, string callback);
+int Unsubscribe(int context_id, string channel);
 int Publish(int context_id, string channel, string data);
 
-void subscribe(redisContext* context, string channel);
+void subscribe(subscription sub);
 void amx_tick(AMX* amx);
 int contextFromId(int context_id, redisContext*& context);
-
-/*
-	Note:
-	A subscription represents an active waiting channel.
-*/
-struct subscription
-{
-	std::thread::id thread_id;
-	string channel;
-	string callback;
-};
 
 extern int context_count;
 extern std::map<int, redisContext*> contexts;

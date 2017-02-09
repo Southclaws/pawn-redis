@@ -151,6 +151,7 @@ TestInit:Subscribe()
 Test:Subscribe()
 {
 	new ret = Redis_Subscribe(context, "samp.test.1", "Recieve");
+	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 }
 

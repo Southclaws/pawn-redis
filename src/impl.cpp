@@ -332,19 +332,15 @@ int Redisamp::Subscribe(int context_id, string channel, string callback)
 		return err;
 
 	int result;
-	redisReply *reply = redisCommand(context, "SUBSCRIBE %s", channel.c_str());
-
-	if(reply == NULL)
-	{
-		logprintf("Redis error: %s", context->errstr);
-		result = context->err;
-	}
-
-	freeReplyObject(reply);
 
 	std::thread* thr = nullptr;
+	subscription s;
+	s.parent = context;
+	s.context = nullptr;
+	s.channel = channel;
+	s.callback = callback;
 
-	thr = new std::thread(subscribe, context, channel);
+	thr = new std::thread(subscribe, s);
 	logprintf("thread started");
 
 	if(thr == nullptr)
@@ -355,37 +351,84 @@ int Redisamp::Subscribe(int context_id, string channel, string callback)
 	else
 	{
 		logprintf("sub created, channel %s", channel.c_str());
-		subscription s;
 		s.thread_id = thr->get_id();
-		s.channel = channel;
-		s.callback = callback;
 
 		subscriptions[channel] = s;
 
 		thr->detach();
 
 		delete thr;
+		result = 0;
 	}
 	logprintf("finished");
 	return result;
 }
 
-void Redisamp::subscribe(string channel)
+void Redisamp::subscribe(subscription sub)
 {
-	// todo: new context for each thread.
-	redisReply *reply;
+	struct timeval timeout_val = {1, 0};
+
+	sub.context = redisConnectWithTimeout(sub.parent->tcp.host, sub.parent->tcp.port, timeout_val);
+
+	if (sub.context == NULL || sub.context->err)
+	{
+		if (sub.context)
+		{
+			logprintf("Redis subscribe error: %s", sub.context->errstr);
+			redisFree(sub.context);
+			return;
+		}
+		else
+		{
+			return;
+		}
+		exit(1);
+	}
+
+	redisReply *reply = redisCommand(sub.context, "SUBSCRIBE %s", sub.channel.c_str());
+
+	if(reply == NULL)
+	{
+		logprintf("Redis subscribe error: %s", sub.context->errstr);
+		return;
+	}
+
+	freeReplyObject(reply);
 
 	struct timeval timeval = {1, 0};
-	redisSetTimeout(context, timeval);
+	redisSetTimeout(sub.context, timeval);
 
-	logprintf("subscribed to %s", channel.c_str());
+	logprintf("subscribed to %s", sub.channel.c_str());
 
-	while(redisGetReply(context, &reply) == REDIS_OK)
+	int ret;
+
+	while(true)
 	{
-		logprintf(reply->type);
-		logprintf(reply->str);
-		freeReplyObject(reply);
+		ret = redisGetReply(sub.context, &reply);
+
+		if(ret == -1)
+		{
+			logprintf("context error: %s", sub.context->errstr);
+			continue;
+		}
+
+		logprintf("got reply from subscription: %d", ret);
+
+		// logprintf(reply->type);
+		// logprintf(reply->str);
+
+		if(ret == REDIS_OK)
+		{
+			freeReplyObject(reply);
+		}
 	}
+
+	return;
+}
+
+int Redisamp::Unsubscribe(int context_id, string channel)
+{
+	return 0;
 }
 
 int Redisamp::Publish(int context, string channel, string data)

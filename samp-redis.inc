@@ -49,3 +49,4 @@ native Redis_GetFloat(Redis:context, key[], &Float:value);
 
 native Redis_Subscribe(Redis:context, channel[], callback[]);
 native Redis_Publish(Redis:context, channel[], data[]);
+native Unsubscribe(Redis:context, channel[]);
