@@ -385,43 +385,15 @@ void Redisamp::subscribe(subscription sub)
 		exit(1);
 	}
 
-	redisReply *reply = redisCommand(sub.context, "SUBSCRIBE %s", sub.channel.c_str());
+	redisReply *reply = redisCommand(sub.context, "BLPOP %s 0", sub.channel.c_str());
 
-	if(reply == NULL)
-	{
-		logprintf("Redis subscribe error: %s", sub.context->errstr);
-		return;
-	}
+	logprintf("REPLY type: %d\n", reply->type);
+	logprintf("REPLY integer: %d\n", reply->integer);
+	logprintf("REPLY len: %d\n", reply->len);
+	logprintf("REPLY str: %s\n", reply->str);
+	logprintf("REPLY elements: %d\n", reply->elements);
 
 	freeReplyObject(reply);
-
-	struct timeval timeval = {1, 0};
-	redisSetTimeout(sub.context, timeval);
-
-	logprintf("subscribed to %s", sub.channel.c_str());
-
-	int ret;
-
-	while(true)
-	{
-		ret = redisGetReply(sub.context, &reply);
-
-		if(ret == -1)
-		{
-			logprintf("context error: %s", sub.context->errstr);
-			continue;
-		}
-
-		logprintf("got reply from subscription: %d", ret);
-
-		// logprintf(reply->type);
-		// logprintf(reply->str);
-
-		if(ret == REDIS_OK)
-		{
-			freeReplyObject(reply);
-		}
-	}
 
 	return;
 }
