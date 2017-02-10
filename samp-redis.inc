@@ -36,7 +36,7 @@
 #define REDIS_REPLY_STATUS					(5)
 #define REDIS_REPLY_ERROR					(6)
 
-native Redis:Redis_Connect(host[], port, timeout);
+native Redis:Redis_Connect(host[], port);
 native Redis_Disconnect(Redis:context);
 
 native Redis_Command(Redis:context, command[]);
@@ -47,6 +47,5 @@ native Redis_GetInt(Redis:context, key[], &value);
 native Redis_SetFloat(Redis:context, key[], Float:value);
 native Redis_GetFloat(Redis:context, key[], &Float:value);
 
-native Redis_Subscribe(Redis:context, channel[], callback[]);
-native Redis_Publish(Redis:context, channel[], data[]);
-native Unsubscribe(Redis:context, channel[]);
+native Redis_BindMessage(Redis:context, channel[], callback[]);
+native Redis_SendMessage(Redis:context, channel[], data[]);

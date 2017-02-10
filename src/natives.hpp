@@ -54,8 +54,8 @@ cell GetInt(AMX *amx, cell *params);
 cell SetFloat(AMX *amx, cell *params);
 cell GetFloat(AMX *amx, cell *params);
 
-cell Subscribe(AMX *amx, cell *params);
-cell Publish(AMX *amx, cell *params);
+cell BindMessage(AMX *amx, cell *params);
+cell SendMessage(AMX *amx, cell *params);
 
 };
 

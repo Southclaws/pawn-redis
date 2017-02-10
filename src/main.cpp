@@ -88,6 +88,7 @@ PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
 	for(AMX* i : amx_list)
 	{
+		Redisamp::amx_tick(i);
 	}
 }
 
@@ -137,8 +138,8 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	{"Redis_GetInt", Native::GetInt},
 	{"Redis_SetFloat", Native::SetFloat},
 	{"Redis_GetFloat", Native::GetFloat},
-	{"Redis_Subscribe", Native::Subscribe},
-	{"Redis_Publish", Native::Publish},
+	{"Redis_BindMessage", Native::BindMessage},
+	{"Redis_SendMessage", Native::SendMessage},
 
 	{NULL, NULL}
 };

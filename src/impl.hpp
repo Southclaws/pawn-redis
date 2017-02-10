@@ -32,7 +32,9 @@
 
 #include <string>
 #include <map>
+#include <stack>
 #include <thread>
+#include <mutex>
 
 using std::string;
 
@@ -68,10 +70,14 @@ namespace Redisamp
 */
 struct subscription
 {
-	redisContext* parent;
-	redisContext* context;
-	std::thread::id thread_id;
 	string channel;
+	string callback;
+};
+
+struct message
+{
+	string channel;
+	string message;
 	string callback;
 };
 
@@ -86,17 +92,25 @@ int GetInt(int context_id, string key, int &value);
 int SetFloat(int context_id, string key, float value);
 int GetFloat(int context_id, string key, float &value);
 
-int Subscribe(int context_id, string channel, string callback);
-int Unsubscribe(int context_id, string channel);
-int Publish(int context_id, string channel, string data);
+int BindMessage(int context_id, string channel, string callback);
+int SendMessage(int context_id, string channel, string message);
 
-void subscribe(subscription sub);
+/*
+	Note:
+	I'm a Golang fanboy so I'm using Go's universal style:
+	Public exports are TitleCase, privates are camelCase.
+*/
+void await(const redisContext *parent, const string channel, const string callback);
+void processMessages(const redisReply *reply, const string channel, const string callback);
+void processMessage(const redisReply *reply, const string channel, const string callback);
 void amx_tick(AMX* amx);
 int contextFromId(int context_id, redisContext*& context);
 
 extern int context_count;
 extern std::map<int, redisContext*> contexts;
-extern std::map<string, Redisamp::subscription> subscriptions;
+extern std::map<string, string> subscriptions;
+extern std::stack<Redisamp::message> message_stack;
+extern std::mutex message_stack_mutex;
 
 }
 

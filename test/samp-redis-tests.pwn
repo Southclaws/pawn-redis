@@ -9,9 +9,9 @@ new Redis:context;
 
 Test:ConnectDisconnect()
 {
-	context = Redis_Connect("localhost", 6379, 1);
+	context = Redis_Connect("localhost", 6379);
 	printf("context: %d", _:context);
-	ASSERT(context == Redis:0);
+	ASSERT(context != Redis:-1);
 
 	new ret = Redis_Disconnect(context);
 	printf("ret: %d", ret);
@@ -31,7 +31,7 @@ Test:DisconnectInvalid()
 */
 TestInit:Ping()
 {
-	context = Redis_Connect("localhost", 6379, 1);
+	context = Redis_Connect("localhost", 6379);
 }
 
 Test:Ping()
@@ -52,7 +52,7 @@ TestClose:Ping()
 */
 TestInit:SetThenGetString()
 {
-	context = Redis_Connect("localhost", 6379, 1);
+	context = Redis_Connect("localhost", 6379);
 }
 
 Test:SetThenGetString()
@@ -83,7 +83,7 @@ TestClose:SetThenGetString()
 */
 TestInit:SetThenGetInt()
 {
-	context = Redis_Connect("localhost", 6379, 1);
+	context = Redis_Connect("localhost", 6379);
 }
 
 Test:SetThenGetInt()
@@ -114,7 +114,7 @@ TestClose:SetThenGetInt()
 */
 TestInit:SetThenGetFloat()
 {
-	context = Redis_Connect("localhost", 6379, 1);
+	context = Redis_Connect("localhost", 6379);
 }
 
 Test:SetThenGetFloat()
@@ -141,27 +141,35 @@ TestClose:SetThenGetFloat()
 
 
 /*
-	Subscribe to a 
+	Bind a callback to a message channel
 */
-TestInit:Subscribe()
+TestInit:MessageBindReply()
 {
-	context = Redis_Connect("localhost", 6379, 1);
+	context = Redis_Connect("localhost", 6379);
 }
 
-Test:Subscribe()
+Test:MessageBindReply()
 {
-	new ret = Redis_Subscribe(context, "samp.test.1", "Recieve");
+	new ret = Redis_BindMessage(context, "samp.test.1", "Receive");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	ret = Redis_SendMessage(context, "samp.test.1", "hello world!");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 }
 
-TestClose:Subscribe()
+TestClose:MessageBindReply()
 {
 	Redis_Disconnect(context);
 }
 
-forward Recieve(data[]);
-public Recieve(data[])
+forward Receive(data[]);
+public Receive(data[])
 {
-	printf("Recieve called with data: '%s'", data);
+	if(!strcmp(data, "hello world!"))
+		printf("\n\nPASS!\n\n*** Redis bind message callback returned the correct value: '%s' test passed!", data);
+
+	else
+		printf("\n\nFAIL!\n\n*** Redis bind message callback returned the incorrect value: '%s'", data);
 }

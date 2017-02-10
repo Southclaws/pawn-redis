@@ -20,15 +20,18 @@
 
 	Note:
 		This file contains the actual Redis implementation code including the
-		subscribe threading and callback mechanism.
+		message binding, threading and callback mechanism.
 
 
 ==============================================================================*/
 
 
 #include <string>
+#include <cstring>
 #include <map>
+#include <stack>
 #include <thread>
+#include <mutex>
 
 using std::string;
 
@@ -49,7 +52,25 @@ std::map<int, redisContext*> Redisamp::contexts;
 	Note:
 	Stores a list of active subscriptions
 */
-std::map<string, Redisamp::subscription> Redisamp::subscriptions;
+std::map<string, string> Redisamp::subscriptions;
+
+/*
+	Note:
+	Contains a list of responses that have finished processing. When a thread
+	has obtained a message from a queue, it will store the return value on this
+	stack. When the AMX calls ProcessTick, it will process whatever available
+	items are stored in it. This is the bread & butter of thread-safe plugins.
+*/
+std::stack<Redisamp::message> Redisamp::message_stack;
+
+/*
+	Note:
+	This mutex protects the message_stack from race conditions. Since each bind
+	await runs in a thread, two scripts could finished at the same time and try
+	to write their responses into the stack. This is standard when working with
+	threads!
+*/
+std::mutex Redisamp::message_stack_mutex;
 
 /*
 	Note:
@@ -324,7 +345,7 @@ int Redisamp::GetFloat(int context_id, string key, float &value)
 }
 
 
-int Redisamp::Subscribe(int context_id, string channel, string callback)
+int Redisamp::BindMessage(int context_id, string channel, string callback)
 {
 	redisContext* context = NULL;
 	int err = contextFromId(context_id, context);
@@ -334,48 +355,69 @@ int Redisamp::Subscribe(int context_id, string channel, string callback)
 	int result;
 
 	std::thread* thr = nullptr;
-	subscription s;
-	s.parent = context;
-	s.context = nullptr;
-	s.channel = channel;
-	s.callback = callback;
 
-	thr = new std::thread(subscribe, s);
-	logprintf("thread started");
+	thr = new std::thread(await, context, channel, callback);
 
 	if(thr == nullptr)
 	{
-		logprintf("unable to create thread for Redis subscribe");
+		logprintf("unable to create thread for Redis await");
 		result = REDIS_ERROR_SUBSCRIBE_THREAD_ERROR;
 	}
 	else
 	{
-		logprintf("sub created, channel %s", channel.c_str());
-		s.thread_id = thr->get_id();
-
-		subscriptions[channel] = s;
-
+		subscriptions[channel] = callback;
 		thr->detach();
-
 		delete thr;
 		result = 0;
 	}
-	logprintf("finished");
+
 	return result;
 }
 
-void Redisamp::subscribe(subscription sub)
+int Redisamp::SendMessage(int context_id, string channel, string data)
+{
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	redisReply *reply = redisCommand(context, "LPUSH %s %s", channel.c_str(), data.c_str());
+	int result = 0;
+
+	if(reply == NULL)
+	{
+		logprintf("Redis error: %s", context->errstr);
+		result = context->err;
+	}
+	if(reply->type != REDIS_REPLY_INTEGER)
+	{
+		logprintf("Redis SendMessage did not return an integer as expected");
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+
+	freeReplyObject(reply);
+
+	return result;
+}
+
+
+/*
+	Note:
+	Internal functions not exposed to Pawn.
+*/
+
+void Redisamp::await(const redisContext *parent, const string channel, const string callback)
 {
 	struct timeval timeout_val = {1, 0};
 
-	sub.context = redisConnectWithTimeout(sub.parent->tcp.host, sub.parent->tcp.port, timeout_val);
+	redisContext *context = redisConnectWithTimeout(parent->tcp.host, parent->tcp.port, timeout_val);
 
-	if (sub.context == NULL || sub.context->err)
+	if (context == NULL || context->err)
 	{
-		if (sub.context)
+		if (context)
 		{
-			logprintf("Redis subscribe error: %s", sub.context->errstr);
-			redisFree(sub.context);
+			logprintf("Redis await error on channel '%s': %s", channel.c_str(), context->errstr);
+			redisFree(context);
 			return;
 		}
 		else
@@ -385,32 +427,105 @@ void Redisamp::subscribe(subscription sub)
 		exit(1);
 	}
 
-	redisReply *reply = redisCommand(sub.context, "BLPOP %s 0", sub.channel.c_str());
+	redisReply *reply;
 
-	logprintf("REPLY type: %d\n", reply->type);
-	logprintf("REPLY integer: %d\n", reply->integer);
-	logprintf("REPLY len: %d\n", reply->len);
-	logprintf("REPLY str: %s\n", reply->str);
-	logprintf("REPLY elements: %d\n", reply->elements);
+	while(true)
+	{
+		reply = redisCommand(context, "BLPOP %s 0", channel.c_str());
 
-	freeReplyObject(reply);
+		if(reply->type != REDIS_REPLY_ARRAY)
+		{
+			logprintf("Redis await error on channel '%s': reply type was not array", channel.c_str());
+			continue;
+		}
+
+		if(reply->elements < 2)
+		{
+			logprintf("Redis await error on channel '%s': reply elements is %d", reply->elements);
+			continue;
+		}
+
+		processMessages(reply, channel, callback);
+
+		freeReplyObject(reply);
+	}
+
+	logprintf("ERROR: Redis await on channel '%s' has stopped", channel.c_str());
 
 	return;
 }
 
-int Redisamp::Unsubscribe(int context_id, string channel)
+void Redisamp::processMessages(const redisReply *reply, const string channel, const string callback)
 {
-	return 0;
+	if(strcmp(channel.c_str(), reply->element[0]->str))
+	{
+		logprintf("Redis processMessages error on channel '%s': reply channel '%s' does not match", channel.c_str(), reply->element[0]->str);
+		return;
+	}
+
+	for(int i = 1; i < reply->elements; ++i)
+	{
+		processMessage(reply->element[i], channel, callback);
+	}
 }
 
-int Redisamp::Publish(int context, string channel, string data)
+void Redisamp::processMessage(const redisReply *reply, const string channel, const string callback)
 {
-	return 0;
+	message m;
+	m.channel = channel;
+	m.message = string(reply->str);
+	m.callback = callback;
+
+	message_stack_mutex.lock();
+	message_stack.push(m);
+	message_stack_mutex.unlock();
 }
 
 void Redisamp::amx_tick(AMX* amx)
 {
-	//
+	if(message_stack_mutex.try_lock())
+	{
+		message m;
+		int error = 0;
+		int amx_idx = -1;
+		cell amx_addr;
+		cell amx_ret;
+		cell *phys_addr; 
+
+		while(!message_stack.empty())
+		{
+			m = message_stack.top();
+
+			error = amx_FindPublic(amx, m.callback.c_str(), &amx_idx);
+
+			if(error == AMX_ERR_NONE)
+			{
+				/*
+					Note:
+					This is the part that calls the Pawn callback!
+				*/
+				amx_Push(amx, m.message.length());
+				amx_PushString(amx, &amx_addr, &phys_addr, m.message.c_str(), 0, 0);
+				amx_Exec(amx, &amx_ret, amx_idx);
+				amx_Release(amx, amx_addr);
+
+				if(amx_ret > 0)
+				{
+					// todo: something clever with the return value...
+					logprintf("return from amx was %d", amx_ret);
+				}
+			}
+			else
+			{
+				logprintf("ERROR: amx_FindPublic returned %d.", error);
+			}
+
+			message_stack.pop();
+		}
+		message_stack_mutex.unlock();
+	}
+
+	return;
 }
 
 int Redisamp::contextFromId(int context_id, redisContext *& context)
