@@ -4,7 +4,7 @@ OUTFILE = redis.so
 RED_DIR = src/hiredis
 SDK_DIR = src/sdk
 
-COMPILE_FLAGS = -fpermissive -pthread -fPIC -m32 -std=c++11 -c -O3 -w -g -D LINUX
+COMPILE_FLAGS = -fpermissive -pthread -fPIC -m32 -std=c++11 -c -O3 -w -ggdb -D LINUX
 LINK_FLAGS = -Wl,--no-undefined -lpthread -O2 -m32 -fshort-wchar -shared
 
 TEST_SERVER_DIR = ../samp037svr_R2-1

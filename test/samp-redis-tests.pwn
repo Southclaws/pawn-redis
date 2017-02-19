@@ -178,7 +178,7 @@ public Receive(data[])
 
 new Redis:context_bind_2;
 /*
-	Bind a callback to a message channel
+	Bind multiple callbacks to multiple message channels.
 */
 TestInit:MultiMessage()
 {
@@ -217,4 +217,41 @@ public Receive2(data[])
 
 	else
 		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive2' returned the incorrect value: '%s'", data);
+}
+
+
+new Redis:context_bind_3;
+/*
+	Bind a callback to a message channel and wait a little for a reply.
+*/
+TestInit:DeferredMessage()
+{
+	context_bind_3 = Redis_Connect("localhost", 6379);
+}
+
+Test:DeferredMessage()
+{
+	new ret = Redis_BindMessage(context_bind_3, "samp.test.3", "ReceiveLater");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	SetTimer("SendLater", 3000, false);
+}
+
+forward SendLater();
+public SendLater()
+{
+	new ret = Redis_SendMessage(context_bind_3, "samp.test.3", "is anyone there?");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+}
+
+forward ReceiveLater(data[]);
+public ReceiveLater(data[])
+{
+	if(!strcmp(data, "is anyone there?"))
+		printf("\n\nPASS!\n\n*** Redis bind message callback 'ReceiveLater' returned the correct value: '%s' test passed!", data);
+
+	else
+		printf("\n\nFAIL!\n\n*** Redis bind message callback 'ReceiveLater' returned the incorrect value: '%s'", data);
 }
