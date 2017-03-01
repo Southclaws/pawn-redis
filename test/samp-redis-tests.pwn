@@ -2,7 +2,7 @@
 #define RUN_TESTS
 #include <YSI\y_testing>
 
-#include "../samp-redis.inc"
+#include "../redis.inc"
 
 new Redis:context;
 
@@ -140,36 +140,149 @@ TestClose:SetThenGetFloat()
 }
 
 
+new Redis:context_bind_1;
 /*
 	Bind a callback to a message channel
 */
 TestInit:MessageBindReply()
 {
-	context = Redis_Connect("localhost", 6379);
+	context_bind_1 = Redis_Connect("localhost", 6379);
 }
 
 Test:MessageBindReply()
 {
-	new ret = Redis_BindMessage(context, "samp.test.1", "Receive");
+	new ret = Redis_BindMessage(context_bind_1, "samp.test.1", "Receive");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
-	ret = Redis_SendMessage(context, "samp.test.1", "hello world!");
+	ret = Redis_SendMessage(context_bind_1, "samp.test.1", "hello world!");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 }
 
 TestClose:MessageBindReply()
 {
-	Redis_Disconnect(context);
+	Redis_Disconnect(context_bind_1);
 }
 
 forward Receive(data[]);
 public Receive(data[])
 {
 	if(!strcmp(data, "hello world!"))
-		printf("\n\nPASS!\n\n*** Redis bind message callback returned the correct value: '%s' test passed!", data);
+		printf("\n\nPASS!\n\n*** Redis bind message callback 'Receive' returned the correct value: '%s' test passed!", data);
 
 	else
-		printf("\n\nFAIL!\n\n*** Redis bind message callback returned the incorrect value: '%s'", data);
+		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive' returned the incorrect value: '%s'", data);
+}
+
+
+new Redis:context_bind_2;
+/*
+	Bind a callback to a message channel
+*/
+TestInit:MultiMessage()
+{
+	context_bind_2 = Redis_Connect("localhost", 6379);
+}
+
+Test:MultiMessage()
+{
+	new ret = Redis_BindMessage(context_bind_2, "samp.test.2", "Receive2");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	ret = Redis_SendMessage(context_bind_2, "samp.test.2", "to receive2");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	ret = Redis_SendMessage(context_bind_2, "samp.test.2", "to receive2");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	ret = Redis_SendMessage(context_bind_2, "samp.test.2", "to receive2");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+}
+
+TestClose:MultiMessage()
+{
+	Redis_Disconnect(context_bind_2);
+}
+
+forward Receive2(data[]);
+public Receive2(data[])
+{
+	if(!strcmp(data, "to receive2"))
+		printf("\n\nPASS!\n\n*** Redis bind message callback 'Receive2' returned the correct value: '%s' test passed!", data);
+
+	else
+		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive2' returned the incorrect value: '%s'", data);
+}
+
+
+new Redis:context_bind_3;
+/*
+	Bind a callback to a message channel
+*/
+TestInit:DeferredMessage()
+{
+	context_bind_3 = Redis_Connect("localhost", 6379);
+}
+
+Test:DeferredMessage()
+{
+	new ret = Redis_BindMessage(context_bind_3, "samp.test.3", "ReceiveLater");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	SetTimer("SendLater", 3000, false);
+}
+
+forward SendLater();
+public SendLater()
+{
+	new ret = Redis_SendMessage(context_bind_3, "samp.test.3", "is anyone there?");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+}
+
+forward ReceiveLater(data[]);
+public ReceiveLater(data[])
+{
+	if(!strcmp(data, "is anyone there?"))
+		printf("\n\nPASS!\n\n*** Redis bind message callback 'ReceiveLater' returned the correct value: '%s' test passed!", data);
+
+	else
+		printf("\n\nFAIL!\n\n*** Redis bind message callback 'ReceiveLater' returned the incorrect value: '%s'", data);
+}
+
+
+new Redis:context_bind_4;
+/*
+	Bind a callback to a message channel
+*/
+TestInit:Discord()
+{
+	context_bind_4 = Redis_Connect("localhost", 6379);
+}
+
+Test:Discord()
+{
+	new ret = Redis_BindMessage(context_bind_4, "samp.chat.discord.incoming", "Discord");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	ret = Redis_SendMessage(context_bind_4, "samp.chat.discord.incoming", "hello world!");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+}
+
+forward Discord(data[]);
+public Discord(data[])
+{
+	if(!strcmp(data, "hello world!"))
+		printf("\n\nPASS!\n\n*** Redis bind message callback 'Discord' returned the correct value: '%s' test passed!", data);
+
+	else
+		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Discord' returned the incorrect value: '%s'", data);
 }
