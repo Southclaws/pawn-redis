@@ -508,15 +508,11 @@ void Redisamp::await(const redisContext *parent, const string channel, const str
 	{
 		reply = redisCommand(context, "BLPOP %s 0", channel.c_str());
 
-		logprintf("[await] got reply addr: %x", reply);
-
 		if(reply == NULL)
 		{
 			logprintf("Redis await error on channel '%s': reply null, context error: '%s'", channel.c_str(), context->errstr);
 			return;
 		}
-
-		logprintf("[await] reply type: %d ", reply->type);
 
 		if(reply->type != REDIS_REPLY_ARRAY)
 		{
@@ -530,12 +526,7 @@ void Redisamp::await(const redisContext *parent, const string channel, const str
 			continue;
 		}
 
-		logprintf("[await] processMessages");
-
 		processMessages(reply, channel, callback);
-
-		logprintf("[await] freeReplyObject");
-
 		freeReplyObject(reply);
 	}
 
@@ -587,22 +578,17 @@ void Redisamp::amx_tick(AMX* amx)
 		{
 			m = message_stack.top();
 
-			logprintf("[amx_tick] finding public '%s'", m.callback.c_str());
-
 			error = amx_FindPublic(amx, m.callback.c_str(), &amx_idx);
-
-			logprintf("[amx_tick] result %d", error);
 
 			if(error == AMX_ERR_NONE)
 			{
-				logprintf("[amx_tick] 'amx' addr %x", amx);
 				/*
 					Note:
 					This is the part that calls the Pawn callback!
 				*/
 				amx_Push(amx, m.message.length());
 				amx_PushString(amx, &amx_addr, &phys_addr, m.message.c_str(), 0, 0);
-				logprintf("[amx_tick] 'amx_addr' value %x", amx_addr);
+
 				amx_Exec(amx, &amx_ret, amx_idx);
 				amx_Release(amx, amx_addr);
 
