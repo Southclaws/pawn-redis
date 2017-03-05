@@ -150,6 +150,39 @@ cell Native::GetFloat(AMX *amx, cell *params)
 	return ret;
 }
 
+cell Native::SetHashValue(AMX *amx, cell *params)
+{
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	string inner = amx_GetCppString(amx, params[3]);
+	string value = amx_GetCppString(amx, params[4]);
+
+	return Redisamp::SetHashValue(context_id, key, inner, value);
+}
+
+cell Native::GetHashValue(AMX *amx, cell *params)
+{
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+	string inner = amx_GetCppString(amx, params[3]);
+	string value;
+
+	int ret = Redisamp::GetHashValue(context_id, key, inner, value);
+	amx_SetCppString(amx, params[4], value, params[5]);
+
+	return ret;
+}
+
+cell Native::SetHashValues(AMX *amx, cell *params)
+{
+	return 0;
+}
+
+cell Native::GetHashValues(AMX *amx, cell *params)
+{
+	return 0;
+}
+
 
 cell Native::BindMessage(AMX* amx, cell *params)
 {

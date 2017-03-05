@@ -31,12 +31,14 @@
 #define SAMP_REDIS_IMPL_H
 
 #include <string>
+#include <vector>
 #include <map>
 #include <stack>
 #include <thread>
 #include <mutex>
 
 using std::string;
+using std::vector;
 
 #include "hiredis/hiredis.h"
 
@@ -91,6 +93,11 @@ int SetInt(int context_id, string key, int value);
 int GetInt(int context_id, string key, int &value);
 int SetFloat(int context_id, string key, float value);
 int GetFloat(int context_id, string key, float &value);
+
+int SetHashValue(int context_id, string key, string inner, string value);
+int GetHashValue(int context_id, string key, string inner, string& value);
+int SetHashValues(int context_id, string key, string inner, vector<string> value);
+int GetHashValues(int context_id, string key, string inner, vector<string>& value);
 
 int BindMessage(int context_id, string channel, string callback);
 int SendMessage(int context_id, string channel, string message);

@@ -41,11 +41,16 @@ native Redis_Disconnect(Redis:context);
 
 native Redis_Command(Redis:context, command[]);
 native Redis_SetString(Redis:context, key[], value[]);
-native Redis_GetString(Redis:context, key[], value[], len);
+native Redis_GetString(Redis:context, key[], value[], len = sizeof(value));
 native Redis_SetInt(Redis:context, key[], value);
 native Redis_GetInt(Redis:context, key[], &value);
 native Redis_SetFloat(Redis:context, key[], Float:value);
 native Redis_GetFloat(Redis:context, key[], &Float:value);
+
+native Redis_SetHashValue(Redis:context, key[], inner_key[], value[]);
+native Redis_GetHashValue(Redis:context, key[], inner_key[], value[], len = sizeof(value));
+native Redis_SetHashValues(Redis:context, key[], ...);
+native Redis_GetHashValues(Redis:context, key[], values[][]);
 
 native Redis_BindMessage(Redis:context, channel[], callback[]);
 native Redis_SendMessage(Redis:context, channel[], data[]);

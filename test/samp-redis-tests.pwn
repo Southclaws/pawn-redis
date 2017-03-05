@@ -255,3 +255,38 @@ public ReceiveLater(data[])
 	else
 		printf("\n\nFAIL!\n\n*** Redis bind message callback 'ReceiveLater' returned the incorrect value: '%s'", data);
 }
+
+
+new Redis:context_hash_1;
+/*
+	Set a hash and check the get value
+*/
+TestInit:SetThenGetHashValue()
+{
+	context_hash_1 = Redis_Connect("localhost", 6379);
+}
+
+Test:SetThenGetHashValue()
+{
+	new ret;
+	new want[32];
+	want = "value";
+
+	ret = Redis_SetHashValue(context_hash_1, "test.hash", "property", want);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	new got[32];
+
+	ret = Redis_GetHashValue(context_hash_1, "test.hash", "property", got);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	printf("want: '%s' got: '%s'", want, got);
+	ASSERT(!strcmp(want, got));
+}
+
+TestClose:SetThenGetHashValue()
+{
+	Redis_Disconnect(context_hash_1);
+}

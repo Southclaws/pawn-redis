@@ -53,6 +53,10 @@ cell SetInt(AMX *amx, cell *params);
 cell GetInt(AMX *amx, cell *params);
 cell SetFloat(AMX *amx, cell *params);
 cell GetFloat(AMX *amx, cell *params);
+cell SetHashValue(AMX *amx, cell *params);
+cell GetHashValue(AMX *amx, cell *params);
+cell SetHashValues(AMX *amx, cell *params);
+cell GetHashValues(AMX *amx, cell *params);
 
 cell BindMessage(AMX *amx, cell *params);
 cell SendMessage(AMX *amx, cell *params);
