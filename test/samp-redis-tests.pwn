@@ -4,12 +4,10 @@
 
 #include "../redis.inc"
 
-new Redis:context;
-
 
 Test:ConnectDisconnect()
 {
-	context = Redis_Connect("localhost", 6379);
+	new Redis:context = Redis_Connect("localhost", 6379);
 	printf("context: %d", _:context);
 	ASSERT(context != Redis:-1);
 
@@ -29,42 +27,44 @@ Test:DisconnectInvalid()
 /*
 	Simple ping
 */
+new Redis:context_ping;
 TestInit:Ping()
 {
-	context = Redis_Connect("localhost", 6379);
+	context_ping = Redis_Connect("localhost", 6379);
 }
 
 Test:Ping()
 {
-	new ret = Redis_Command(context, "PING");
+	new ret = Redis_Command(context_ping, "PING");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 }
 
 TestClose:Ping()
 {
-	Redis_Disconnect(context);
+	Redis_Disconnect(context_ping);
 }
 
 
 /*
 	Set a string key then get it and compare the value.
 */
+new Redis:context_setgetstr;
 TestInit:SetThenGetString()
 {
-	context = Redis_Connect("localhost", 6379);
+	context_setgetstr = Redis_Connect("localhost", 6379);
 }
 
 Test:SetThenGetString()
 {
-	new ret = Redis_SetString(context, "test", "hello world!");
+	new ret = Redis_SetString(context_setgetstr, "test", "hello world!");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
 	new want[13] = {"hello world!"};
 	new got[13];
 
-	ret = Redis_GetString(context, "test", got, 13);
+	ret = Redis_GetString(context_setgetstr, "test", got, 13);
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
@@ -74,28 +74,57 @@ Test:SetThenGetString()
 
 TestClose:SetThenGetString()
 {
-	Redis_Disconnect(context);
+	Redis_Disconnect(context_setgetstr);
 }
 
 
 /*
-	Set a string key then get it and compare the value.
+	Set a string key then check if it exists.
 */
+new Redis:context_exists;
+TestInit:CheckExists()
+{
+	context_exists = Redis_Connect("localhost", 6379);
+}
+
+Test:CheckExists()
+{
+	new exists = Redis_Exists(context_exists, "test_exists");
+	ASSERT(exists == 0);
+
+	new ret = Redis_SetInt(context_exists, "test_exists", 42);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	exists = Redis_Exists(context_exists, "test_exists");
+	ASSERT(exists == 1);
+}
+
+TestClose:CheckExists()
+{
+	Redis_Disconnect(context_exists);
+}
+
+
+/*
+	Set an int key then get it and compare the value.
+*/
+new Redis:context_setgetint;
 TestInit:SetThenGetInt()
 {
-	context = Redis_Connect("localhost", 6379);
+	context_setgetint = Redis_Connect("localhost", 6379);
 }
 
 Test:SetThenGetInt()
 {
-	new ret = Redis_SetInt(context, "test", 42);
+	new ret = Redis_SetInt(context_setgetint, "test", 42);
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
 	new want = 42;
 	new got;
 
-	ret = Redis_GetInt(context, "test", got);
+	ret = Redis_GetInt(context_setgetint, "test", got);
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
@@ -105,28 +134,29 @@ Test:SetThenGetInt()
 
 TestClose:SetThenGetInt()
 {
-	Redis_Disconnect(context);
+	Redis_Disconnect(context_setgetint);
 }
 
 
 /*
-	Set a string key then get it and compare the value.
+	Set a float key then get it and compare the value.
 */
+new Redis:context_setgetfloat;
 TestInit:SetThenGetFloat()
 {
-	context = Redis_Connect("localhost", 6379);
+	context_setgetfloat = Redis_Connect("localhost", 6379);
 }
 
 Test:SetThenGetFloat()
 {
-	new ret = Redis_SetFloat(context, "test", 77.653);
+	new ret = Redis_SetFloat(context_setgetfloat, "test", 77.653);
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
 	new Float:want = 77.653;
 	new Float:got;
 
-	ret = Redis_GetFloat(context, "test", got);
+	ret = Redis_GetFloat(context_setgetfloat, "test", got);
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
@@ -136,14 +166,14 @@ Test:SetThenGetFloat()
 
 TestClose:SetThenGetFloat()
 {
-	Redis_Disconnect(context);
+	Redis_Disconnect(context_setgetfloat);
 }
 
 
-new Redis:context_bind_1;
 /*
 	Bind a callback to a message channel
 */
+new Redis:context_bind_1;
 TestInit:MessageBindReply()
 {
 	context_bind_1 = Redis_Connect("localhost", 6379);
@@ -176,10 +206,10 @@ public Receive(data[])
 }
 
 
-new Redis:context_bind_2;
 /*
 	Bind multiple callbacks to multiple message channels.
 */
+new Redis:context_bind_2;
 TestInit:MultiMessage()
 {
 	context_bind_2 = Redis_Connect("localhost", 6379);
@@ -220,10 +250,10 @@ public Receive2(data[])
 }
 
 
-new Redis:context_bind_3;
 /*
 	Bind a callback to a message channel and wait a little for a reply.
 */
+new Redis:context_bind_3;
 TestInit:DeferredMessage()
 {
 	context_bind_3 = Redis_Connect("localhost", 6379);
@@ -257,10 +287,10 @@ public ReceiveLater(data[])
 }
 
 
-new Redis:context_hash_1;
 /*
 	Set a hash and check the get value
 */
+new Redis:context_hash_1;
 TestInit:SetThenGetHashValue()
 {
 	context_hash_1 = Redis_Connect("localhost", 6379);

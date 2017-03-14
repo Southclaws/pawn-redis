@@ -171,7 +171,7 @@ int Redisamp::Exists(int context_id, string key)
 	}
 	else
 	{
-		result = 1;
+		result = reply->integer;
 	}
 
 	freeReplyObject(reply);
