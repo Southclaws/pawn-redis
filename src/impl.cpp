@@ -149,6 +149,36 @@ int Redisamp::Command(int context_id, string command)
 	return result;
 }
 
+int Redisamp::Exists(int context_id, string key)
+{
+	redisContext* context = NULL;
+	int err = contextFromId(context_id, context);
+	if(err)
+		return err;
+
+	redisReply *reply = redisCommand(context, "EXISTS %s", key.c_str());
+	int result = 0;
+
+	if(reply == NULL)
+	{
+		logprintf("Redis context error: %s", context->errstr);
+		result = context->err;
+	}
+	else if(reply->type != REDIS_REPLY_INT)
+	{
+		logprintf("expected int reply but got %d", reply->type);
+		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+	}
+	else
+	{
+		value = reply->integer;
+	}
+
+	freeReplyObject(reply);
+
+	return result;
+}
+
 int Redisamp::SetString(int context_id, string key, string value)
 {
 	redisContext* context = NULL;
@@ -384,20 +414,24 @@ int Redisamp::GetHashValue(int context_id, string key, string inner, string& val
 	{
 		logprintf("Redis context error: %s", context->errstr);
 		result = context->err;
+		value = "";
 	}
 	else if(reply->type == REDIS_REPLY_NIL)
 	{
 		logprintf("expected string reply but got nil");
 		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+		value = "";
 	}
 	else if(reply->type != REDIS_REPLY_STRING)
 	{
 		logprintf("expected string reply but got %d", reply->type);
 		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+		value = "";
 	}
 	else if(reply->len <= 0)
 	{
 		result = REDIS_ERROR_COMMAND_NO_REPLY;
+		value = "";
 	}
 	else
 	{

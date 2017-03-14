@@ -78,6 +78,14 @@ cell Native::Command(AMX *amx, cell *params)
 	return Redisamp::Command(context_id, command);
 }
 
+cell Native::Exists(AMX *amx, cell *params)
+{
+	int context_id = params[1];
+	string key = amx_GetCppString(amx, params[2]);
+
+	return Redisamp::Exists(context_id, key);
+}
+
 cell Native::SetString(AMX *amx, cell *params)
 {
 	int context_id = params[1];

@@ -87,6 +87,7 @@ int Connect(string hostname, int port, int timeout);
 int Disconnect(int context_id);
 
 int Command(int context_id, string command);
+int Exists(int context_id, string key);
 int SetString(int context_id, string key, string value);
 int GetString(int context_id, string key, string& value);
 int SetInt(int context_id, string key, int value);

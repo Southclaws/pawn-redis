@@ -40,6 +40,7 @@ native Redis:Redis_Connect(host[], port);
 native Redis_Disconnect(Redis:context);
 
 native Redis_Command(Redis:context, command[]);
+native Redis_Exists(Redis:context, key[]);
 native Redis_SetString(Redis:context, key[], value[]);
 native Redis_GetString(Redis:context, key[], value[], len = sizeof(value));
 native Redis_SetInt(Redis:context, key[], value);

@@ -132,6 +132,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] =
 	{"Redis_Disconnect", Native::Disconnect},
 
 	{"Redis_Command", Native::Command},
+	{"Redis_Exists", Native::Exists},
 	{"Redis_SetString", Native::SetString},
 	{"Redis_GetString", Native::GetString},
 	{"Redis_SetInt", Native::SetInt},
