@@ -47,6 +47,36 @@ TestClose:Ping()
 
 
 /*
+	Set a string key then check if it exists.
+*/
+new Redis:context_exists;
+TestInit:CheckExists()
+{
+	context_exists = Redis_Connect("localhost", 6379);
+}
+
+Test:CheckExists()
+{
+	new exists = Redis_Exists(context_exists, "test_exists");
+	ASSERT(exists == 0);
+
+	new ret = Redis_SetInt(context_exists, "test_exists", 42);
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+
+	exists = Redis_Exists(context_exists, "test_exists");
+	ASSERT(exists == 1);
+
+	Redis_Command(context_exists, "DEL test_exists");
+}
+
+TestClose:CheckExists()
+{
+	Redis_Disconnect(context_exists);
+}
+
+
+/*
 	Set a string key then get it and compare the value.
 */
 new Redis:context_setgetstr;
@@ -75,34 +105,6 @@ Test:SetThenGetString()
 TestClose:SetThenGetString()
 {
 	Redis_Disconnect(context_setgetstr);
-}
-
-
-/*
-	Set a string key then check if it exists.
-*/
-new Redis:context_exists;
-TestInit:CheckExists()
-{
-	context_exists = Redis_Connect("localhost", 6379);
-}
-
-Test:CheckExists()
-{
-	new exists = Redis_Exists(context_exists, "test_exists");
-	ASSERT(exists == 0);
-
-	new ret = Redis_SetInt(context_exists, "test_exists", 42);
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-
-	exists = Redis_Exists(context_exists, "test_exists");
-	ASSERT(exists == 1);
-}
-
-TestClose:CheckExists()
-{
-	Redis_Disconnect(context_exists);
 }
 
 
