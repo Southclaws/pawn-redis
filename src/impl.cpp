@@ -162,16 +162,16 @@ int Redisamp::Exists(int context_id, string key)
 	if(reply == NULL)
 	{
 		logprintf("Redis context error: %s", context->errstr);
-		result = context->err;
+		result = 0;
 	}
 	else if(reply->type != REDIS_REPLY_INT)
 	{
 		logprintf("expected int reply but got %d", reply->type);
-		result = REDIS_ERROR_COMMAND_BAD_REPLY;
+		result = 0;
 	}
 	else
 	{
-		value = reply->integer;
+		result = 1;
 	}
 
 	freeReplyObject(reply);
