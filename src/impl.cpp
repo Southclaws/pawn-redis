@@ -164,7 +164,7 @@ int Redisamp::Exists(int context_id, string key)
 		logprintf("Redis context error: %s", context->errstr);
 		result = 0;
 	}
-	else if(reply->type != REDIS_REPLY_INT)
+	else if(reply->type != REDIS_REPLY_INTEGER)
 	{
 		logprintf("expected int reply but got %d", reply->type);
 		result = 0;
