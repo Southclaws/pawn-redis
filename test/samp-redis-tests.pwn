@@ -4,10 +4,11 @@
 
 #include "../redis.inc"
 
+new auth[41] = "77fe172e874dd2259ee051378f7fed549ea84cc5";
 
 Test:ConnectDisconnect()
 {
-	new Redis:context = Redis_Connect("localhost", 6379);
+	new Redis:context = Redis_Connect("localhost", 6379, auth);
 	printf("context: %d", _:context);
 	ASSERT(context != Redis:-1);
 
@@ -30,7 +31,7 @@ Test:DisconnectInvalid()
 new Redis:context_ping;
 TestInit:Ping()
 {
-	context_ping = Redis_Connect("localhost", 6379);
+	context_ping = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:Ping()
@@ -52,7 +53,7 @@ TestClose:Ping()
 new Redis:context_exists;
 TestInit:CheckExists()
 {
-	context_exists = Redis_Connect("localhost", 6379);
+	context_exists = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:CheckExists()
@@ -82,7 +83,7 @@ TestClose:CheckExists()
 new Redis:context_setgetstr;
 TestInit:SetThenGetString()
 {
-	context_setgetstr = Redis_Connect("localhost", 6379);
+	context_setgetstr = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:SetThenGetString()
@@ -114,7 +115,7 @@ TestClose:SetThenGetString()
 new Redis:context_setgetint;
 TestInit:SetThenGetInt()
 {
-	context_setgetint = Redis_Connect("localhost", 6379);
+	context_setgetint = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:SetThenGetInt()
@@ -146,7 +147,7 @@ TestClose:SetThenGetInt()
 new Redis:context_setgetfloat;
 TestInit:SetThenGetFloat()
 {
-	context_setgetfloat = Redis_Connect("localhost", 6379);
+	context_setgetfloat = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:SetThenGetFloat()
@@ -178,7 +179,7 @@ TestClose:SetThenGetFloat()
 new Redis:context_bind_1;
 TestInit:MessageBindReply()
 {
-	context_bind_1 = Redis_Connect("localhost", 6379);
+	context_bind_1 = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:MessageBindReply()
@@ -214,7 +215,7 @@ public Receive(data[])
 new Redis:context_bind_2;
 TestInit:MultiMessage()
 {
-	context_bind_2 = Redis_Connect("localhost", 6379);
+	context_bind_2 = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:MultiMessage()
@@ -258,7 +259,7 @@ public Receive2(data[])
 new Redis:context_bind_3;
 TestInit:DeferredMessage()
 {
-	context_bind_3 = Redis_Connect("localhost", 6379);
+	context_bind_3 = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:DeferredMessage()
@@ -295,7 +296,7 @@ public ReceiveLater(data[])
 new Redis:context_hash_1;
 TestInit:SetThenGetHashValue()
 {
-	context_hash_1 = Redis_Connect("localhost", 6379);
+	context_hash_1 = Redis_Connect("localhost", 6379, auth);
 }
 
 Test:SetThenGetHashValue()

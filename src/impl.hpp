@@ -47,6 +47,7 @@ using std::vector;
 
 #define REDIS_ERROR_CONNECT_GENERIC			(-1)
 #define REDIS_ERROR_CONNECT_FAIL			(-2)
+#define REDIS_ERROR_CONNECT_AUTH			(-3)
 #define REDIS_ERROR_CONTEXT_INVALID_ID		(10)
 #define REDIS_ERROR_CONTEXT_MISSING_POINTER	(20)
 #define REDIS_ERROR_COMMAND_BAD_REPLY		(30)
@@ -83,7 +84,7 @@ struct message
 	string callback;
 };
 
-int Connect(string hostname, int port, int timeout);
+int Connect(string hostname, int port, string auth);
 int Disconnect(int context_id);
 
 int Command(int context_id, string command);
@@ -108,7 +109,7 @@ int SendMessage(int context_id, string channel, string message);
 	I'm a Golang fanboy so I'm using Go's universal style:
 	Public exports are TitleCase, privates are camelCase.
 */
-void await(const redisContext *parent, const string channel, const string callback);
+void await(const redisContext *parent, string auth, const string channel, const string callback);
 void processMessages(const redisReply *reply, const string channel, const string callback);
 void processMessage(const redisReply *reply, const string channel, const string callback);
 void amx_tick(AMX* amx);
@@ -116,6 +117,7 @@ int contextFromId(int context_id, redisContext*& context);
 
 extern int context_count;
 extern std::map<int, redisContext*> contexts;
+extern std::map<int, string> auths;
 extern std::map<string, string> subscriptions;
 extern std::stack<Redisamp::message> message_stack;
 extern std::mutex message_stack_mutex;

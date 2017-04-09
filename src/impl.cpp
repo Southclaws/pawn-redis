@@ -47,6 +47,7 @@ using std::string;
 */
 int Redisamp::context_count;
 std::map<int, redisContext*> Redisamp::contexts;
+std::map<int, string> Redisamp::auths;
 
 /*
 	Note:
@@ -88,9 +89,9 @@ std::mutex Redisamp::message_stack_mutex;
 	- `-1`: generic error
 	- `-2`: cannot allocate redis context
 */
-int Redisamp::Connect(string hostname, int port, int timeout)
+int Redisamp::Connect(string hostname, int port, string auth)
 {
-	struct timeval timeout_val = {timeout, 0};
+	struct timeval timeout_val = {1, 0};
 
 	redisContext *context = redisConnectWithTimeout(hostname.c_str(), port, timeout_val);
 
@@ -109,7 +110,15 @@ int Redisamp::Connect(string hostname, int port, int timeout)
 		exit(1);
 	}
 
+	redisReply *reply = redisCommand(context, "AUTH %s", auth.c_str());
+	if (reply->type == REDIS_REPLY_ERROR) {
+		logprintf("redis auth failed");
+		return REDIS_ERROR_CONNECT_AUTH;
+	}
+	freeReplyObject(reply);
+
 	contexts[context_count] = context;
+	auths[context_count] = auth;
 
 	return context_count++;
 }
@@ -461,11 +470,13 @@ int Redisamp::BindMessage(int context_id, string channel, string callback)
 	if(err)
 		return err;
 
+	string auth = auths[context_id];
+
 	int result;
 
 	std::thread* thr = nullptr;
 
-	thr = new std::thread(await, context, channel, callback);
+	thr = new std::thread(await, context, auth, channel, callback);
 
 	if(thr == nullptr)
 	{
@@ -515,7 +526,7 @@ int Redisamp::SendMessage(int context_id, string channel, string data)
 	Internal functions not exposed to Pawn.
 */
 
-void Redisamp::await(const redisContext *parent, const string channel, const string callback)
+void Redisamp::await(const redisContext *parent, string auth, const string channel, const string callback)
 {
 	struct timeval timeout_val = {1, 0};
 
@@ -536,7 +547,12 @@ void Redisamp::await(const redisContext *parent, const string channel, const str
 		exit(1);
 	}
 
-	redisReply *reply;
+	redisReply *reply = redisCommand(context, "AUTH %s", auth.c_str());
+	if (reply->type == REDIS_REPLY_ERROR) {
+		logprintf("redis auth failed");
+		return;
+	}
+	freeReplyObject(reply);
 
 	while(true)
 	{
@@ -551,13 +567,13 @@ void Redisamp::await(const redisContext *parent, const string channel, const str
 		if(reply->type != REDIS_REPLY_ARRAY)
 		{
 			logprintf("Redis await error on channel '%s': reply type was not array", channel.c_str());
-			continue;
+			return;
 		}
 
 		if(reply->elements < 2)
 		{
 			logprintf("Redis await error on channel '%s': reply elements is %d", reply->elements);
-			continue;
+			return;
 		}
 
 		processMessages(reply, channel, callback);

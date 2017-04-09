@@ -57,9 +57,9 @@ cell Native::Connect(AMX *amx, cell *params)
 {
 	string hostname = amx_GetCppString(amx, params[1]);
 	int port = params[2];
-	int timeout = params[3];
+	string auth = amx_GetCppString(amx, params[3]);
 
-	return Redisamp::Connect(hostname, port, timeout);
+	return Redisamp::Connect(hostname, port, auth);
 }
 
 cell Native::Disconnect(AMX *amx, cell *params)
