@@ -17,6 +17,14 @@ In SA:MP terms: Redis is can be the GVar plugin on steroids. It can be threaded 
 
 You can also use Redis to delegate slower tasks to other programs through the power of message queues!
 
+## Building
+
+I dev on Ubuntu 64 bit and I probably won't have time to maintain other versions so I'll only provide details for my platform,
+If you're on a 64 bit system, you'll need 32 bit libc stuff: `sudo apt install libc6-dev-i386`
+You'll also need `g++multilib` but aside from that, I don't think anything else is required (though it probably is... c++ is fun like that)
+
+Once you've got all that sorted, just run `make` and you should see a `redis.so` file appear!
+
 ## Development
 
 "Redisamp" is currently in development and is in version 0.1.0 since it's not been fully tested in a production/public server environment.
