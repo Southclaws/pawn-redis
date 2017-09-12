@@ -15,7 +15,7 @@ Pretty impressive right? Okay, maybe not so much. How about this:
 
 I'm assuming you know what a *global variable* is:
 
-```c
+```pawn
 #include <a_samp>
 
 new gMyFavouriteColour = 0xFF3200FF;
@@ -71,7 +71,7 @@ Right, so lets go back to the example:
 
 With this new system, the server can simply send a message down a *"channel"* which is *consumed* by the *Backend server* and then treated like any other AJAX/WebSockets event.
 
-```c
+```pawn
 public OnHqUnderAttack(factionID, attackerFactionID) {
     Redis_SendMessage(gRedis, "faction.notifications.under_attack", sprintf("%d %d", factionID, attackerFactionID))
 }
@@ -107,7 +107,7 @@ This can also happen in reverse. Say a user wanted to click a button on the webs
 
 Once you've dealt with all the PayPal API nonsense, it's as easy as binding a callback in Pawn to a *"channel"* via the Redis plugin:
 
-```c
+```pawn
 main() {
     Redis_BindMessage(gRedis, "faction.notifications.explode", "OnUserPurchaseExplosion")
 }
