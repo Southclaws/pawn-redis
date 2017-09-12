@@ -2,11 +2,13 @@
 
 A powerful Redis plugin granting access to a fast in-memory database and asynchronous message channels between other programs.
 
+[If you have no idea what Redis is and why it's so powerful with SA:MP, **click here!**](docs/readme.md)
+
 It's open source and available here: https://github.com/Southclaws/samp-redis
 
 The first release is available here: https://github.com/Southclaws/samp-redis/releases/tag/v0.1.0
 
-It only supports Linux and only ever will (unless someone gets Hiredis compiling on Windows!)
+It only supports Linux but I have plans to build a separate plugin for Windows to aid development. This will likely be a separate repository and use a different Redis library - the Linux version (this one) is considered "production ready" as it's likely the fastest implementation of a Redis client (hiredis).
 
 ## What's Redis?
 
