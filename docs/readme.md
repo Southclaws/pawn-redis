@@ -15,7 +15,7 @@ Pretty impressive right? Okay, maybe not so much. How about this:
 
 I'm assuming you know what a *global variable* is:
 
-```c
+```pawn
 #include <a_samp>
 
 new gMyFavouriteColour = 0xFF3200FF;
