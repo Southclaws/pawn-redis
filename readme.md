@@ -10,6 +10,8 @@ The first release is available here: https://github.com/Southclaws/samp-redis/re
 
 It only supports Linux but I have plans to build a separate plugin for Windows to aid development. This will likely be a separate repository and use a different Redis library - the Linux version (this one) is considered "production ready" as it's likely the fastest implementation of a Redis client (hiredis).
 
+![allaboardtheredismobile.png](allaboardtheredismobile.png)
+
 ## What's Redis?
 
 > Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker. It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs and geospatial indexes with radius queries.
