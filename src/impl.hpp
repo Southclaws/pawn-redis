@@ -3,7 +3,7 @@
 
 	Redis for SA:MP
 
-		Copyright (C) 2016 Barnaby "Southclaw" Keene
+		Copyright (C) 2016 Barnaby "Southclaws" Keene
 
 		This program is free software: you can redistribute it and/or modify it
 		under the terms of the GNU General Public License as published by the
@@ -53,8 +53,7 @@ using std::vector;
 #define REDIS_ERROR_SUBSCRIBE_THREAD_ERROR (50)
 #define REDIS_ERROR_UNEXPECTED_RESULT_TYPE (60)
 
-namespace Redisamp
-{
+namespace Redisamp {
 
 /*
 	Note:
@@ -69,17 +68,15 @@ namespace Redisamp
 	same channel is illogical, this makes finding an existing subscription
 	trivial.
 */
-struct subscription
-{
-	string channel;
-	string callback;
+struct subscription {
+    string channel;
+    string callback;
 };
 
-struct message
-{
-	string channel;
-	string message;
-	string callback;
+struct message {
+    string channel;
+    string message;
+    string callback;
 };
 
 int Connect(string hostname, int port, string auth);
@@ -88,16 +85,16 @@ int Disconnect(int context_id);
 int Command(int context_id, string command);
 int Exists(int context_id, string key);
 int SetString(int context_id, string key, string value);
-int GetString(int context_id, string key, string &value);
+int GetString(int context_id, string key, string& value);
 int SetInt(int context_id, string key, int value);
-int GetInt(int context_id, string key, int &value);
+int GetInt(int context_id, string key, int& value);
 int SetFloat(int context_id, string key, float value);
-int GetFloat(int context_id, string key, float &value);
+int GetFloat(int context_id, string key, float& value);
 
 int SetHashValue(int context_id, string key, string inner, string value);
-int GetHashValue(int context_id, string key, string inner, string &value);
+int GetHashValue(int context_id, string key, string inner, string& value);
 int SetHashValues(int context_id, string key, string inner, vector<string> value);
-int GetHashValues(int context_id, string key, string inner, vector<string> &value);
+int GetHashValues(int context_id, string key, string inner, vector<string>& value);
 
 int BindMessage(int context_id, string channel, string callback);
 int SendMessage(int context_id, string channel, string message);
@@ -105,16 +102,16 @@ int SendMessage(int context_id, string channel, string message);
 /*
 	Note:
 	I'm a Golang fanboy so I'm using Go's universal style:
-	Public exports are TitleCase, privates are camelCase.
+	Public exports begin with UpperCase, privates begin with lowerCase
 */
-void await(const redisContext *parent, string auth, const string channel, const string callback);
-void processMessages(const redisReply *reply, const string channel, const string callback);
-void processMessage(const redisReply *reply, const string channel, const string callback);
-void amx_tick(AMX *amx);
-int contextFromId(int context_id, redisContext *&context);
+void await(const redisContext* parent, string auth, const string channel, const string callback);
+void processMessages(const redisReply* reply, const string channel, const string callback);
+void processMessage(const redisReply* reply, const string channel, const string callback);
+void amx_tick(AMX* amx);
+int contextFromId(int context_id, redisContext*& context);
 
 extern int context_count;
-extern std::map<int, redisContext *> contexts;
+extern std::map<int, redisContext*> contexts;
 extern std::map<int, string> auths;
 extern std::map<string, string> subscriptions;
 extern std::stack<Redisamp::message> message_stack;

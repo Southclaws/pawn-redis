@@ -53,10 +53,10 @@ test: $(OUTFILE)
 	# now run the server
 
 build-builder:
-	docker build -t southclaws/redis-builder .
+	docker build -t Southclawss/redis-builder .
 
 run-builder: build-builder
-	docker run -v $(PWD)/build:/root/build southclaws/redis-builder
+	docker run -v $(PWD)/build:/root/build Southclawss/redis-builder
 	rm build/*.o # remove intermediate build files
 
 clean:

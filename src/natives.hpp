@@ -3,7 +3,7 @@
 
 	Redis for SA:MP
 
-		Copyright (C) 2016 Barnaby "Southclaw" Keene
+		Copyright (C) 2016 Barnaby "Southclaws" Keene
 
 		This program is free software: you can redistribute it and/or modify it
 		under the terms of the GNU General Public License as published by the
@@ -31,7 +31,6 @@
 
 ==============================================================================*/
 
-
 #ifndef SAMP_REDIS_NATIVES_H
 #define SAMP_REDIS_NATIVES_H
 
@@ -39,29 +38,26 @@
 
 #include "main.hpp"
 
+namespace Native {
 
-namespace Native 
-{
+cell Connect(AMX* amx, cell* params);
+cell Disconnect(AMX* amx, cell* params);
 
-cell Connect(AMX *amx, cell *params);
-cell Disconnect(AMX *amx, cell *params);
+cell Command(AMX* amx, cell* params);
+cell Exists(AMX* amx, cell* params);
+cell SetString(AMX* amx, cell* params);
+cell GetString(AMX* amx, cell* params);
+cell SetInt(AMX* amx, cell* params);
+cell GetInt(AMX* amx, cell* params);
+cell SetFloat(AMX* amx, cell* params);
+cell GetFloat(AMX* amx, cell* params);
+cell SetHashValue(AMX* amx, cell* params);
+cell GetHashValue(AMX* amx, cell* params);
+cell SetHashValues(AMX* amx, cell* params);
+cell GetHashValues(AMX* amx, cell* params);
 
-cell Command(AMX *amx, cell *params);
-cell Exists(AMX *amx, cell *params);
-cell SetString(AMX *amx, cell *params);
-cell GetString(AMX *amx, cell *params);
-cell SetInt(AMX *amx, cell *params);
-cell GetInt(AMX *amx, cell *params);
-cell SetFloat(AMX *amx, cell *params);
-cell GetFloat(AMX *amx, cell *params);
-cell SetHashValue(AMX *amx, cell *params);
-cell GetHashValue(AMX *amx, cell *params);
-cell SetHashValues(AMX *amx, cell *params);
-cell GetHashValues(AMX *amx, cell *params);
-
-cell BindMessage(AMX *amx, cell *params);
-cell SendMessage(AMX *amx, cell *params);
-
+cell BindMessage(AMX* amx, cell* params);
+cell SendMessage(AMX* amx, cell* params);
 };
 
 #endif

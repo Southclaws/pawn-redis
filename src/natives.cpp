@@ -3,7 +3,7 @@
 
 	Redis for SA:MP
 
-		Copyright (C) 2016 Barnaby "Southclaw" Keene
+		Copyright (C) 2016 Barnaby "Southclaws" Keene
 
 		This program is free software: you can redistribute it and/or modify it
 		under the terms of the GNU General Public License as published by the
@@ -42,170 +42,166 @@
 
 ==============================================================================*/
 
-
 #include <string>
 #include <vector>
 
 using std::string;
 using std::vector;
 
-#include "natives.hpp"
 #include "impl.hpp"
+#include "natives.hpp"
 
-
-cell Native::Connect(AMX *amx, cell *params)
+cell Native::Connect(AMX* amx, cell* params)
 {
-	string hostname = amx_GetCppString(amx, params[1]);
-	int port = params[2];
-	string auth = amx_GetCppString(amx, params[3]);
+    string hostname = amx_GetCppString(amx, params[1]);
+    int port = params[2];
+    string auth = amx_GetCppString(amx, params[3]);
 
-	return Redisamp::Connect(hostname, port, auth);
+    return Redisamp::Connect(hostname, port, auth);
 }
 
-cell Native::Disconnect(AMX *amx, cell *params)
+cell Native::Disconnect(AMX* amx, cell* params)
 {
-	int context_id = params[1];
+    int context_id = params[1];
 
-	return Redisamp::Disconnect(context_id);
+    return Redisamp::Disconnect(context_id);
 }
 
-
-cell Native::Command(AMX *amx, cell *params)
+cell Native::Command(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string command = amx_GetCppString(amx, params[2]);
+    int context_id = params[1];
+    string command = amx_GetCppString(amx, params[2]);
 
-	return Redisamp::Command(context_id, command);
+    return Redisamp::Command(context_id, command);
 }
 
-cell Native::Exists(AMX *amx, cell *params)
+cell Native::Exists(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
 
-	return Redisamp::Exists(context_id, key);
+    return Redisamp::Exists(context_id, key);
 }
 
-cell Native::SetString(AMX *amx, cell *params)
+cell Native::SetString(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	string value = amx_GetCppString(amx, params[3]);
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string value = amx_GetCppString(amx, params[3]);
 
-	return Redisamp::SetString(context_id, key, value);
+    return Redisamp::SetString(context_id, key, value);
 }
 
-cell Native::GetString(AMX *amx, cell *params)
+cell Native::GetString(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	string value;
-	int ret;
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string value;
+    int ret;
 
-	ret = Redisamp::GetString(context_id, key, value);
-	amx_SetCppString(amx, params[3], value, params[4]);
+    ret = Redisamp::GetString(context_id, key, value);
+    amx_SetCppString(amx, params[3], value, params[4]);
 
-	return ret;
+    return ret;
 }
 
-cell Native::SetInt(AMX *amx, cell *params)
+cell Native::SetInt(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	int value = params[3];
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    int value = params[3];
 
-	return Redisamp::SetInt(context_id, key, value);
+    return Redisamp::SetInt(context_id, key, value);
 }
 
-cell Native::GetInt(AMX *amx, cell *params)
+cell Native::GetInt(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	int value;
-	int ret;
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    int value;
+    int ret;
 
-	ret = Redisamp::GetInt(context_id, key, value);
+    ret = Redisamp::GetInt(context_id, key, value);
 
-	cell *address;
-	amx_GetAddr(amx, params[3], &address);
-	*address = value;
+    cell* address;
+    amx_GetAddr(amx, params[3], &address);
+    *address = value;
 
-	return ret;
+    return ret;
 }
 
-cell Native::SetFloat(AMX *amx, cell *params)
+cell Native::SetFloat(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	float value = *(float*)&params[3]; // weird float conversion
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    float value = *(float*)&params[3]; // weird float conversion
 
-	return Redisamp::SetFloat(context_id, key, value);
+    return Redisamp::SetFloat(context_id, key, value);
 }
 
-cell Native::GetFloat(AMX *amx, cell *params)
+cell Native::GetFloat(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	float value;
-	int ret;
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    float value;
+    int ret;
 
-	ret = Redisamp::GetFloat(context_id, key, value);
+    ret = Redisamp::GetFloat(context_id, key, value);
 
-	cell *address;
-	amx_GetAddr(amx, params[3], &address);
-	*address = amx_ftoc(value);
+    cell* address;
+    amx_GetAddr(amx, params[3], &address);
+    *address = amx_ftoc(value);
 
-	return ret;
+    return ret;
 }
 
-cell Native::SetHashValue(AMX *amx, cell *params)
+cell Native::SetHashValue(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	string inner = amx_GetCppString(amx, params[3]);
-	string value = amx_GetCppString(amx, params[4]);
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string inner = amx_GetCppString(amx, params[3]);
+    string value = amx_GetCppString(amx, params[4]);
 
-	return Redisamp::SetHashValue(context_id, key, inner, value);
+    return Redisamp::SetHashValue(context_id, key, inner, value);
 }
 
-cell Native::GetHashValue(AMX *amx, cell *params)
+cell Native::GetHashValue(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string key = amx_GetCppString(amx, params[2]);
-	string inner = amx_GetCppString(amx, params[3]);
-	string value;
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string inner = amx_GetCppString(amx, params[3]);
+    string value;
 
-	int ret = Redisamp::GetHashValue(context_id, key, inner, value);
-	amx_SetCppString(amx, params[4], value, params[5]);
+    int ret = Redisamp::GetHashValue(context_id, key, inner, value);
+    amx_SetCppString(amx, params[4], value, params[5]);
 
-	return ret;
+    return ret;
 }
 
-cell Native::SetHashValues(AMX *amx, cell *params)
+cell Native::SetHashValues(AMX* amx, cell* params)
 {
-	return 0;
+    return 0;
 }
 
-cell Native::GetHashValues(AMX *amx, cell *params)
+cell Native::GetHashValues(AMX* amx, cell* params)
 {
-	return 0;
+    return 0;
 }
 
-
-cell Native::BindMessage(AMX* amx, cell *params)
+cell Native::BindMessage(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string channel = amx_GetCppString(amx, params[2]);
-	string callback = amx_GetCppString(amx, params[3]);
+    int context_id = params[1];
+    string channel = amx_GetCppString(amx, params[2]);
+    string callback = amx_GetCppString(amx, params[3]);
 
-	return Redisamp::BindMessage(context_id, channel, callback);
+    return Redisamp::BindMessage(context_id, channel, callback);
 }
 
-cell Native::SendMessage(AMX* amx, cell *params)
+cell Native::SendMessage(AMX* amx, cell* params)
 {
-	int context_id = params[1];
-	string channel = amx_GetCppString(amx, params[2]);
-	string message = amx_GetCppString(amx, params[3]);
+    int context_id = params[1];
+    string channel = amx_GetCppString(amx, params[2]);
+    string message = amx_GetCppString(amx, params[3]);
 
-	return Redisamp::SendMessage(context_id, channel, message);
+    return Redisamp::SendMessage(context_id, channel, message);
 }

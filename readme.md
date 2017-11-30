@@ -5,7 +5,7 @@ asynchronous message channels between other programs.
 
 [If you have no idea what Redis is and why it's so powerful with SA:MP, **click here!**](docs/readme.md)
 
-It's open source and available [here](https://github.com/Southclaws/samp-redis)
+It's open source and available [here](https://github.com/Southclawss/samp-redis)
 
 ![allaboardtheredismobile.png](allaboardtheredismobile.png)
 

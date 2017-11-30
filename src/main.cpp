@@ -3,7 +3,7 @@
 
 	Redis for SA:MP
 
-		Copyright (C) 2016 Barnaby "Southclaw" Keene
+		Copyright (C) 2016 Barnaby "Southclaws" Keene
 
 		This program is free software: you can redistribute it and/or modify it
 		under the terms of the GNU General Public License as published by the
@@ -26,7 +26,6 @@
 
 ==============================================================================*/
 
-
 #include <set>
 
 using std::set;
@@ -34,10 +33,9 @@ using std::set;
 #include "hiredis/hiredis.h"
 #include <sdk.hpp>
 
+#include "impl.hpp"
 #include "main.hpp"
 #include "natives.hpp"
-#include "impl.hpp"
-
 
 /*==============================================================================
 
@@ -45,8 +43,7 @@ using std::set;
 
 ==============================================================================*/
 
-
-extern void	*pAMXFunctions;
+extern void* pAMXFunctions;
 logprintf_t logprintf_fp;
 
 /*
@@ -59,22 +56,21 @@ logprintf_t logprintf_fp;
 */
 set<AMX*> amx_list;
 
-
-PLUGIN_EXPORT bool PLUGIN_CALL Load(void **ppData) 
+PLUGIN_EXPORT bool PLUGIN_CALL Load(void** ppData)
 {
-	pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
-	logprintf_fp = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
+    pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
+    logprintf_fp = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
 
-	logprintf("\n");
-	logprintf("SA:MP Redis - Redis for SA:MP by Southclaw");
-	logprintf("\n");
+    logprintf("\n");
+    logprintf("SA:MP Redis - Redis for SA:MP by Southclaws");
+    logprintf("\n");
 
-	return true;
+    return true;
 }
 
-PLUGIN_EXPORT void PLUGIN_CALL Unload() 
+PLUGIN_EXPORT void PLUGIN_CALL Unload()
 {
-	logprintf("SA:MP Redis unloaded.");
+    logprintf("SA:MP Redis unloaded.");
 }
 
 /*
@@ -86,27 +82,25 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 */
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-	for(AMX* i : amx_list)
-	{
-		Redisamp::amx_tick(i);
-	}
+    for (AMX* i : amx_list) {
+        Redisamp::amx_tick(i);
+    }
 }
 
 void logprintf(const char* message, ...)
 {
-	unsigned int len = 256;
-	char* result = new char[len];
+    unsigned int len = 256;
+    char* result = new char[len];
 
-	va_list args;
-	va_start(args, message);
+    va_list args;
+    va_start(args, message);
 
-	vsnprintf(result, len, message, args);
-	logprintf_fp(result);
+    vsnprintf(result, len, message, args);
+    logprintf_fp(result);
 
-	va_end(args);
-	delete result;
+    va_end(args);
+    delete result;
 }
-
 
 /*==============================================================================
 
@@ -125,43 +119,41 @@ void logprintf(const char* message, ...)
 
 ==============================================================================*/
 
+extern "C" const AMX_NATIVE_INFO native_list[] = {
+    { "Redis_Connect", Native::Connect },
+    { "Redis_Disconnect", Native::Disconnect },
 
-extern "C" const AMX_NATIVE_INFO native_list[] = 
-{
-	{"Redis_Connect", Native::Connect},
-	{"Redis_Disconnect", Native::Disconnect},
+    { "Redis_Command", Native::Command },
+    { "Redis_Exists", Native::Exists },
+    { "Redis_SetString", Native::SetString },
+    { "Redis_GetString", Native::GetString },
+    { "Redis_SetInt", Native::SetInt },
+    { "Redis_GetInt", Native::GetInt },
+    { "Redis_SetFloat", Native::SetFloat },
+    { "Redis_GetFloat", Native::GetFloat },
+    { "Redis_SetHashValue", Native::SetHashValue },
+    { "Redis_GetHashValue", Native::GetHashValue },
+    { "Redis_SetHashValues", Native::SetHashValues },
+    { "Redis_GetHashValues", Native::GetHashValues },
 
-	{"Redis_Command", Native::Command},
-	{"Redis_Exists", Native::Exists},
-	{"Redis_SetString", Native::SetString},
-	{"Redis_GetString", Native::GetString},
-	{"Redis_SetInt", Native::SetInt},
-	{"Redis_GetInt", Native::GetInt},
-	{"Redis_SetFloat", Native::SetFloat},
-	{"Redis_GetFloat", Native::GetFloat},
-	{"Redis_SetHashValue", Native::SetHashValue},
-	{"Redis_GetHashValue", Native::GetHashValue},
-	{"Redis_SetHashValues", Native::SetHashValues},
-	{"Redis_GetHashValues", Native::GetHashValues},
+    { "Redis_BindMessage", Native::BindMessage },
+    { "Redis_SendMessage", Native::SendMessage },
 
-	{"Redis_BindMessage", Native::BindMessage},
-	{"Redis_SendMessage", Native::SendMessage},
-
-	{NULL, NULL}
+    { NULL, NULL }
 };
 
-PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx) 
+PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX* amx)
 {
-	amx_list.insert(amx);
-	logprintf("Loaded AMX %d", (int)amx);
-	return amx_Register(amx, native_list, -1);
+    amx_list.insert(amx);
+    logprintf("Loaded AMX %d", (int)amx);
+    return amx_Register(amx, native_list, -1);
 }
 
-PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx) 
+PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX* amx)
 {
-	amx_list.erase(amx);
-	logprintf("Unloaded AMX %d", (int)amx);
-	return AMX_ERR_NONE;
+    amx_list.erase(amx);
+    logprintf("Unloaded AMX %d", (int)amx);
+    return AMX_ERR_NONE;
 }
 
 /*
@@ -180,5 +172,5 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
 */
 PLUGIN_EXPORT unsigned int PLUGIN_CALL Supports()
 {
-	return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES | SUPPORTS_PROCESS_TICK; 
+    return SUPPORTS_VERSION | SUPPORTS_AMX_NATIVES | SUPPORTS_PROCESS_TICK;
 }
