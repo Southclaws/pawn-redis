@@ -26,16 +26,15 @@
 
 ==============================================================================*/
 
-
 #ifndef SAMP_REDIS_IMPL_H
 #define SAMP_REDIS_IMPL_H
 
-#include <string>
-#include <vector>
 #include <map>
-#include <stack>
-#include <thread>
 #include <mutex>
+#include <stack>
+#include <string>
+#include <thread>
+#include <vector>
 
 using std::string;
 using std::vector;
@@ -44,16 +43,15 @@ using std::vector;
 
 #include "main.hpp"
 
-
-#define REDIS_ERROR_CONNECT_GENERIC			(-1)
-#define REDIS_ERROR_CONNECT_FAIL			(-2)
-#define REDIS_ERROR_CONNECT_AUTH			(-3)
-#define REDIS_ERROR_CONTEXT_INVALID_ID		(10)
-#define REDIS_ERROR_CONTEXT_MISSING_POINTER	(20)
-#define REDIS_ERROR_COMMAND_BAD_REPLY		(30)
-#define REDIS_ERROR_COMMAND_NO_REPLY		(40)
-#define REDIS_ERROR_SUBSCRIBE_THREAD_ERROR	(50)
-
+#define REDIS_ERROR_CONNECT_GENERIC (-1)
+#define REDIS_ERROR_CONNECT_FAIL (-2)
+#define REDIS_ERROR_CONNECT_AUTH (-3)
+#define REDIS_ERROR_CONTEXT_INVALID_ID (10)
+#define REDIS_ERROR_CONTEXT_MISSING_POINTER (20)
+#define REDIS_ERROR_COMMAND_BAD_REPLY (30)
+#define REDIS_ERROR_COMMAND_NO_REPLY (40)
+#define REDIS_ERROR_SUBSCRIBE_THREAD_ERROR (50)
+#define REDIS_ERROR_UNEXPECTED_RESULT_TYPE (60)
 
 namespace Redisamp
 {
@@ -90,16 +88,16 @@ int Disconnect(int context_id);
 int Command(int context_id, string command);
 int Exists(int context_id, string key);
 int SetString(int context_id, string key, string value);
-int GetString(int context_id, string key, string& value);
+int GetString(int context_id, string key, string &value);
 int SetInt(int context_id, string key, int value);
 int GetInt(int context_id, string key, int &value);
 int SetFloat(int context_id, string key, float value);
 int GetFloat(int context_id, string key, float &value);
 
 int SetHashValue(int context_id, string key, string inner, string value);
-int GetHashValue(int context_id, string key, string inner, string& value);
+int GetHashValue(int context_id, string key, string inner, string &value);
 int SetHashValues(int context_id, string key, string inner, vector<string> value);
-int GetHashValues(int context_id, string key, string inner, vector<string>& value);
+int GetHashValues(int context_id, string key, string inner, vector<string> &value);
 
 int BindMessage(int context_id, string channel, string callback);
 int SendMessage(int context_id, string channel, string message);
@@ -112,16 +110,15 @@ int SendMessage(int context_id, string channel, string message);
 void await(const redisContext *parent, string auth, const string channel, const string callback);
 void processMessages(const redisReply *reply, const string channel, const string callback);
 void processMessage(const redisReply *reply, const string channel, const string callback);
-void amx_tick(AMX* amx);
-int contextFromId(int context_id, redisContext*& context);
+void amx_tick(AMX *amx);
+int contextFromId(int context_id, redisContext *&context);
 
 extern int context_count;
-extern std::map<int, redisContext*> contexts;
+extern std::map<int, redisContext *> contexts;
 extern std::map<int, string> auths;
 extern std::map<string, string> subscriptions;
 extern std::stack<Redisamp::message> message_stack;
 extern std::mutex message_stack_mutex;
-
 }
 
 #endif

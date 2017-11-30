@@ -1,5 +1,6 @@
 GPP = g++
-OUTFILE = redis.so
+OUTFILE = build/redis.so
+PWD = $(shell pwd)
 
 RED_DIR = src/hiredis
 SDK_DIR = src/sdk
@@ -50,6 +51,13 @@ test: $(OUTFILE)
 	cp test/samp-redis-tests.amx $(TEST_SERVER_DIR)/gamemodes/samp-redis-tests.amx
 	cp $(OUTFILE) $(TEST_SERVER_DIR)/plugins/$(OUTFILE)
 	# now run the server
+
+build-builder:
+	docker build -t southclaws/redis-builder .
+
+run-builder: build-builder
+	docker run -v $(PWD)/build:/root/build southclaws/redis-builder
+	rm build/*.o # remove intermediate build files
 
 clean:
 	-rm build/*.o *.so
