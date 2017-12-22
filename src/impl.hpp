@@ -39,8 +39,6 @@
 using std::string;
 using std::vector;
 
-#include "hiredis/hiredis.h"
-
 #include "main.hpp"
 
 #define REDIS_ERROR_CONNECT_GENERIC (-1)

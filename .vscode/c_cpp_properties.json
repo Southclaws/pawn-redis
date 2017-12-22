@@ -10,7 +10,9 @@
                 "/usr/include",
                 "${workspaceRoot}",
                 "${workspaceRoot}/src",
-                "${workspaceRoot}/src/sdk"
+                "${workspaceRoot}/src/sdk",
+                "/usr/local/include/cpp_redis",
+                "/usr/local/include/tacopie"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -56,10 +58,7 @@
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
                 "${workspaceRoot}"
             ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE"
-            ],
+            "defines": ["_DEBUG", "UNICODE"],
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
