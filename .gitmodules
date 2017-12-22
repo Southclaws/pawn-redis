@@ -1,3 +1,6 @@
 [submodule "libs/cpp_redis"]
 	path = libs/cpp_redis
 	url = https://github.com/Cylix/cpp_redis
+[submodule "libs/samp-plugin-sdk"]
+	path = libs/samp-plugin-sdk
+	url = https://github.com/maddinat0r/samp-plugin-sdk
