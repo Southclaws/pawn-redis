@@ -569,7 +569,7 @@ void Redisamp::amx_tick(AMX* amx)
 
                 if (amx_ret > 0) {
                     // todo: something clever with the return value...
-                    logprintf("return from amx was %d", amx_ret);
+                    // logprintf("return from amx was %d", amx_ret);
                 }
             } else {
                 logprintf(
