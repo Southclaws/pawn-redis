@@ -1,26 +1,26 @@
 /*==============================================================================
 
 
-        Redis for SA:MP
+	Redis for SA:MP
 
-                Copyright (C) 2016 Barnaby "Southclaws" Keene
+		Copyright (C) 2016 Barnaby "Southclaws" Keene
 
-                This program is free software: you can redistribute it and/or
-modify it under the terms of the GNU General Public License as published by the
-                Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+		This program is free software: you can redistribute it and/or modify it
+		under the terms of the GNU General Public License as published by the
+		Free Software Foundation, either version 3 of the License, or (at your
+		option) any later version.
 
-                This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-details.
+		This program is distributed in the hope that it will be useful, but
+		WITHOUT ANY WARRANTY; without even the implied warranty of
+		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+		See the GNU General Public License for more details.
 
-                You should have received a copy of the GNU General Public
-License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+		You should have received a copy of the GNU General Public License along
+		with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-        Note:
-                This file contains the actual Redis implementation code
-including the message binding, threading and callback mechanism.
+	Note:
+		This file contains the actual Redis implementation code including the
+		message binding, threading and callback mechanism.
 
 
 ==============================================================================*/
@@ -34,7 +34,7 @@ including the message binding, threading and callback mechanism.
 
 using std::string;
 
-#include <sdk.hpp>
+#include <amx/amx.h>
 
 #include "impl.hpp"
 
@@ -43,15 +43,15 @@ using std::string;
         Slightly hacky but it exposes a simple incrementing integer ID to Pawn
         similar to the way SetTimer IDs are handled.
 */
-int Redisamp::context_count;
-std::map<int, redisContext *> Redisamp::contexts;
-std::map<int, string> Redisamp::auths;
+int Impl::context_count;
+std::map<int, cpp_redis::client*> clients;
+std::map<int, string> Impl::auths;
 
 /*
         Note:
         Stores a list of active subscriptions
 */
-std::map<string, string> Redisamp::subscriptions;
+std::map<string, string> Impl::subscriptions;
 
 /*
         Note:
@@ -61,7 +61,7 @@ std::map<string, string> Redisamp::subscriptions;
    available items are stored in it. This is the bread & butter of thread-safe
    plugins.
 */
-std::stack<Redisamp::message> Redisamp::message_stack;
+std::stack<Impl::message> Impl::message_stack;
 
 /*
         Note:
@@ -70,7 +70,7 @@ std::stack<Redisamp::message> Redisamp::message_stack;
    try to write their responses into the stack. This is standard when working
    with threads!
 */
-std::mutex Redisamp::message_stack_mutex;
+std::mutex Impl::message_stack_mutex;
 
 /*
         Note:
@@ -88,418 +88,347 @@ std::mutex Redisamp::message_stack_mutex;
         - `-1`: generic error
         - `-2`: cannot allocate redis context
 */
-int Redisamp::Connect(string hostname, int port, string auth)
+int Impl::Connect(string hostname, int port, string auth)
 {
-	struct timeval timeout_val = {1, 0};
+    cpp_redis::client* client = new cpp_redis::client();
+    client->connect(hostname, port);
 
-	redisContext *context = redisConnectWithTimeout(hostname.c_str(), port, timeout_val);
+    auto reply = client->auth(auth).get();
 
-	if (context == NULL || context->err)
-	{
-		if (context)
-		{
-			redisFree(context);
-			return REDIS_ERROR_CONNECT_GENERIC;
-		}
-		else
-		{
-			return REDIS_ERROR_CONNECT_FAIL;
-		}
-		exit(1);
-	}
+    if (reply.is_error()) {
+        return REDIS_ERROR_CONNECT_AUTH;
+    }
 
-	redisReply *reply = (redisReply *)redisCommand(context, "AUTH %s", auth.c_str());
-	if (reply->type == REDIS_REPLY_ERROR)
-	{
-		return REDIS_ERROR_CONNECT_AUTH;
-	}
-	freeReplyObject(reply);
+    clients[context_count] = client;
+    auths[context_count] = auth;
 
-	contexts[context_count] = context;
-	auths[context_count] = auth;
-
-	return context_count++;
+    return context_count++;
 }
 
-int Redisamp::Disconnect(int context_id)
+int Impl::Disconnect(int context_id)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err) {
+        return err;
+    }
 
-	redisFree(context);
+    redisFree(context);
 
-	contexts.erase(context_id);
+    contexts.erase(context_id);
 
-	return 0;
+    return 0;
 }
 
-int Redisamp::Command(int context_id, string command)
+int Impl::Command(int context_id, string command)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, command.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, command.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::Exists(int context_id, string key)
+int Impl::Exists(int context_id, string key)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-	{
-		return err;
-	}
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err) {
+        return err;
+    }
 
-	redisReply *reply = (redisReply *)redisCommand(context, "EXISTS %s", key.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "EXISTS %s", key.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	else if (reply->type != REDIS_REPLY_INTEGER)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
-	else
-	{
-		result = reply->integer;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    } else if (reply->type != REDIS_REPLY_INTEGER) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    } else {
+        result = reply->integer;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::SetString(int context_id, string key, string value)
+int Impl::SetString(int context_id, string key, string value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, "SET %s %s", key.c_str(), value.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %s %s", key.c_str(), value.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	if (reply->type != REDIS_REPLY_STATUS)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    }
+    if (reply->type != REDIS_REPLY_STATUS) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::GetString(int context_id, string key, string &value)
+int Impl::GetString(int context_id, string key, string& value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, "GET %s", key.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "GET %s", key.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	else if (reply->type == REDIS_REPLY_NIL)
-	{
-		result = REDIS_ERROR_COMMAND_BAD_REPLY;
-	}
-	else if (reply->type != REDIS_REPLY_STRING)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
-	else if (reply->len <= 0)
-	{
-		result = REDIS_ERROR_COMMAND_NO_REPLY;
-	}
-	else
-	{
-		value = string(reply->str);
-	}
+    if (reply == NULL) {
+        result = context->err;
+    } else if (reply->type == REDIS_REPLY_NIL) {
+        result = REDIS_ERROR_COMMAND_BAD_REPLY;
+    } else if (reply->type != REDIS_REPLY_STRING) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    } else if (reply->len <= 0) {
+        result = REDIS_ERROR_COMMAND_NO_REPLY;
+    } else {
+        value = string(reply->str);
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::SetInt(int context_id, string key, int value)
+int Impl::SetInt(int context_id, string key, int value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, "SET %s %d", key.c_str(), value);
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %s %d", key.c_str(), value);
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	if (reply->type != REDIS_REPLY_STATUS)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    }
+    if (reply->type != REDIS_REPLY_STATUS) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::GetInt(int context_id, string key, int &value)
+int Impl::GetInt(int context_id, string key, int& value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, "GET %s", key.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "GET %s", key.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	else if (reply->type == REDIS_REPLY_NIL)
-	{
-		result = REDIS_ERROR_COMMAND_BAD_REPLY;
-	}
-	else if (reply->type != REDIS_REPLY_STRING)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
-	else if (reply->len <= 0)
-	{
-		result = REDIS_ERROR_COMMAND_NO_REPLY;
-	}
-	else
-	{
-		value = atoi(reply->str);
-	}
+    if (reply == NULL) {
+        result = context->err;
+    } else if (reply->type == REDIS_REPLY_NIL) {
+        result = REDIS_ERROR_COMMAND_BAD_REPLY;
+    } else if (reply->type != REDIS_REPLY_STRING) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    } else if (reply->len <= 0) {
+        result = REDIS_ERROR_COMMAND_NO_REPLY;
+    } else {
+        value = atoi(reply->str);
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::SetFloat(int context_id, string key, float value)
+int Impl::SetFloat(int context_id, string key, float value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, "SET %s %f", key.c_str(), value);
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "SET %s %f", key.c_str(), value);
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	if (reply->type != REDIS_REPLY_STATUS)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    }
+    if (reply->type != REDIS_REPLY_STATUS) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::GetFloat(int context_id, string key, float &value)
+int Impl::GetFloat(int context_id, string key, float& value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(context, "GET %s", key.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(context, "GET %s", key.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	else if (reply->type == REDIS_REPLY_NIL)
-	{
-		result = REDIS_ERROR_COMMAND_BAD_REPLY;
-	}
-	else if (reply->type != REDIS_REPLY_STRING)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
-	else if (reply->len <= 0)
-	{
-		result = REDIS_ERROR_COMMAND_NO_REPLY;
-	}
-	else
-	{
-		value = atof(reply->str);
-	}
+    if (reply == NULL) {
+        result = context->err;
+    } else if (reply->type == REDIS_REPLY_NIL) {
+        result = REDIS_ERROR_COMMAND_BAD_REPLY;
+    } else if (reply->type != REDIS_REPLY_STRING) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    } else if (reply->len <= 0) {
+        result = REDIS_ERROR_COMMAND_NO_REPLY;
+    } else {
+        value = atof(reply->str);
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::SetHashValue(int context_id, string key, string inner, string value)
+int Impl::SetHashValue(int context_id, string key, string inner, string value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(
-		context, "HSET %s %s %s", key.c_str(), inner.c_str(), value.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(
+        context, "HSET %s %s %s", key.c_str(), inner.c_str(), value.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	if (reply->type != REDIS_REPLY_INTEGER)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    }
+    if (reply->type != REDIS_REPLY_INTEGER) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::GetHashValue(int context_id, string key, string inner, string &value)
+int Impl::GetHashValue(int context_id, string key, string inner, string& value)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(
-		context, "HGET %s %s", key.c_str(), inner.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(
+        context, "HGET %s %s", key.c_str(), inner.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-		value = "";
-	}
-	else if (reply->type == REDIS_REPLY_NIL)
-	{
-		result = REDIS_ERROR_COMMAND_BAD_REPLY;
-		value = "";
-	}
-	else if (reply->type != REDIS_REPLY_STRING)
-	{
-		result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
-		value = "";
-	}
-	else if (reply->len <= 0)
-	{
-		result = REDIS_ERROR_COMMAND_NO_REPLY;
-		value = "";
-	}
-	else
-	{
-		value = string(reply->str);
-	}
+    if (reply == NULL) {
+        result = context->err;
+        value = "";
+    } else if (reply->type == REDIS_REPLY_NIL) {
+        result = REDIS_ERROR_COMMAND_BAD_REPLY;
+        value = "";
+    } else if (reply->type != REDIS_REPLY_STRING) {
+        result = REDIS_ERROR_UNEXPECTED_RESULT_TYPE;
+        value = "";
+    } else if (reply->len <= 0) {
+        result = REDIS_ERROR_COMMAND_NO_REPLY;
+        value = "";
+    } else {
+        value = string(reply->str);
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
-int Redisamp::SetHashValues(int context_id,
-							string key,
-							string inner,
-							vector<string> values)
+int Impl::SetHashValues(int context_id,
+    string key,
+    string inner,
+    vector<string> values)
 {
-	return 1;
+    return 1;
 }
 
-int Redisamp::GetHashValues(int context_id,
-							string key,
-							string inner,
-							vector<string> &values)
+int Impl::GetHashValues(int context_id,
+    string key,
+    string inner,
+    vector<string>& values)
 {
-	return 1;
+    return 1;
 }
 
-int Redisamp::BindMessage(int context_id, string channel, string callback)
+int Impl::BindMessage(int context_id, string channel, string callback)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	string auth = auths[context_id];
+    string auth = auths[context_id];
 
-	int result;
+    int result;
 
-	std::thread *thr = nullptr;
+    std::thread* thr = nullptr;
 
-	thr = new std::thread(await, context, auth, channel, callback);
+    thr = new std::thread(await, context, auth, channel, callback);
 
-	if (thr == nullptr)
-	{
-		result = REDIS_ERROR_SUBSCRIBE_THREAD_ERROR;
-	}
-	else
-	{
-		subscriptions[channel] = callback;
-		thr->detach();
-		delete thr;
-		result = 0;
-	}
+    if (thr == nullptr) {
+        result = REDIS_ERROR_SUBSCRIBE_THREAD_ERROR;
+    } else {
+        subscriptions[channel] = callback;
+        thr->detach();
+        delete thr;
+        result = 0;
+    }
 
-	return result;
+    return result;
 }
 
-int Redisamp::SendMessage(int context_id, string channel, string data)
+int Impl::SendMessage(int context_id, string channel, string data)
 {
-	redisContext *context = NULL;
-	int err = contextFromId(context_id, context);
-	if (err)
-		return err;
+    redisContext* context = NULL;
+    int err = clientFromID(context_id, context);
+    if (err)
+        return err;
 
-	redisReply *reply = (redisReply *)redisCommand(
-		context, "LPUSH %s %s", channel.c_str(), data.c_str());
-	int result = 0;
+    redisReply* reply = (redisReply*)redisCommand(
+        context, "LPUSH %s %s", channel.c_str(), data.c_str());
+    int result = 0;
 
-	if (reply == NULL)
-	{
-		result = context->err;
-	}
-	if (reply->type != REDIS_REPLY_INTEGER)
-	{
-		result = REDIS_ERROR_COMMAND_BAD_REPLY;
-	}
+    if (reply == NULL) {
+        result = context->err;
+    }
+    if (reply->type != REDIS_REPLY_INTEGER) {
+        result = REDIS_ERROR_COMMAND_BAD_REPLY;
+    }
 
-	freeReplyObject(reply);
+    freeReplyObject(reply);
 
-	return result;
+    return result;
 }
 
 /*
@@ -507,173 +436,153 @@ int Redisamp::SendMessage(int context_id, string channel, string data)
         Internal functions not exposed to Pawn.
 */
 
-void Redisamp::await(const redisContext *parent,
-					 string auth,
-					 const string channel,
-					 const string callback)
+void Impl::await(const redisContext* parent,
+    string auth,
+    const string channel,
+    const string callback)
 {
-	struct timeval timeout_val = {1, 0};
+    struct timeval timeout_val = { 1, 0 };
 
-	redisContext *context = redisConnectWithTimeout(parent->tcp.host, parent->tcp.port, timeout_val);
+    redisContext* context = redisConnectWithTimeout(parent->tcp.host, parent->tcp.port, timeout_val);
 
-	if (context == NULL || context->err)
-	{
-		if (context)
-		{
-			logprintf("ERROR: Redis await '%s': %s",
-					  channel.c_str(),
-					  context->errstr);
-			redisFree(context);
-			return;
-		}
-		else
-		{
-			return;
-		}
-		exit(1);
-	}
+    if (context == NULL || context->err) {
+        if (context) {
+            logprintf("ERROR: Redis await '%s': %s",
+                channel.c_str(),
+                context->errstr);
+            redisFree(context);
+            return;
+        } else {
+            return;
+        }
+        exit(1);
+    }
 
-	redisReply *reply = (redisReply *)redisCommand(context, "AUTH %s", auth.c_str());
-	if (reply->type == REDIS_REPLY_ERROR)
-	{
-		logprintf("ERROR: Redis auth failed");
-		return;
-	}
-	freeReplyObject(reply);
+    redisReply* reply = (redisReply*)redisCommand(context, "AUTH %s", auth.c_str());
+    if (reply->type == REDIS_REPLY_ERROR) {
+        logprintf("ERROR: Redis auth failed");
+        return;
+    }
+    freeReplyObject(reply);
 
-	while (true)
-	{
-		reply = (redisReply *)redisCommand(context, "BLPOP %s 0", channel.c_str());
+    while (true) {
+        reply = (redisReply*)redisCommand(context, "BLPOP %s 0", channel.c_str());
 
-		if (reply == NULL)
-		{
-			logprintf("ERROR: Redis await '%s': reply null, context error: '%s'",
-					  channel.c_str(),
-					  context->errstr);
-			return;
-		}
+        if (reply == NULL) {
+            logprintf("ERROR: Redis await '%s': reply null, context error: '%s'",
+                channel.c_str(),
+                context->errstr);
+            return;
+        }
 
-		if (reply->type != REDIS_REPLY_ARRAY)
-		{
-			logprintf("ERROR: Redis await '%s': reply type was not array",
-					  channel.c_str());
-			return;
-		}
+        if (reply->type != REDIS_REPLY_ARRAY) {
+            logprintf("ERROR: Redis await '%s': reply type was not array",
+                channel.c_str());
+            return;
+        }
 
-		if (reply->elements < 2)
-		{
-			logprintf("ERROR: Redis await '%s': reply elements is %d",
-					  reply->elements);
-			return;
-		}
+        if (reply->elements < 2) {
+            logprintf("ERROR: Redis await '%s': reply elements is %d",
+                reply->elements);
+            return;
+        }
 
-		processMessages(reply, channel, callback);
-		freeReplyObject(reply);
-	}
+        processMessages(reply, channel, callback);
+        freeReplyObject(reply);
+    }
 
-	redisFree(context);
+    redisFree(context);
 
-	logprintf("ERROR: Redis await on channel '%s' has stopped", channel.c_str());
+    logprintf("ERROR: Redis await on channel '%s' has stopped", channel.c_str());
 
-	return;
+    return;
 }
 
-void Redisamp::processMessages(const redisReply *reply,
-							   const string channel,
-							   const string callback)
+void Impl::processMessages(const redisReply* reply,
+    const string channel,
+    const string callback)
 {
-	if (strcmp(channel.c_str(), reply->element[0]->str))
-	{
-		logprintf("ERROR: Redis processMessages on channel '%s': reply channel '%s' does not match",
-				  channel.c_str(),
-				  reply->element[0]->str);
-		return;
-	}
+    if (strcmp(channel.c_str(), reply->element[0]->str)) {
+        logprintf("ERROR: Redis processMessages on channel '%s': reply channel '%s' does not match",
+            channel.c_str(),
+            reply->element[0]->str);
+        return;
+    }
 
-	for (int i = 1; i < reply->elements; ++i)
-	{
-		processMessage(reply->element[i], channel, callback);
-	}
+    for (int i = 1; i < reply->elements; ++i) {
+        processMessage(reply->element[i], channel, callback);
+    }
 }
 
-void Redisamp::processMessage(const redisReply *reply,
-							  const string channel,
-							  const string callback)
+void Impl::processMessage(const redisReply* reply,
+    const string channel,
+    const string callback)
 {
-	message m;
-	m.channel = channel;
-	m.message = string(reply->str);
-	m.callback = callback;
+    message m;
+    m.channel = channel;
+    m.message = string(reply->str);
+    m.callback = callback;
 
-	message_stack_mutex.lock();
-	message_stack.push(m);
-	message_stack_mutex.unlock();
+    message_stack_mutex.lock();
+    message_stack.push(m);
+    message_stack_mutex.unlock();
 }
 
-void Redisamp::amx_tick(AMX *amx)
+void Impl::amx_tick(AMX* amx)
 {
-	if (message_stack_mutex.try_lock())
-	{
-		message m;
-		int error = 0;
-		int amx_idx = -1;
-		cell amx_addr;
-		cell amx_ret;
-		cell *phys_addr;
+    if (message_stack_mutex.try_lock()) {
+        message m;
+        int error = 0;
+        int amx_idx = -1;
+        cell amx_addr;
+        cell amx_ret;
+        cell* phys_addr;
 
-		while (!message_stack.empty())
-		{
-			m = message_stack.top();
+        while (!message_stack.empty()) {
+            m = message_stack.top();
 
-			error = amx_FindPublic(amx, m.callback.c_str(), &amx_idx);
+            error = amx_FindPublic(amx, m.callback.c_str(), &amx_idx);
 
-			if (error == AMX_ERR_NONE)
-			{
-				/*
+            if (error == AMX_ERR_NONE) {
+                /*
                 Note:
                 This is the part that calls the Pawn callback!
                 */
-				amx_Push(amx, m.message.length());
-				amx_PushString(amx, &amx_addr, &phys_addr, m.message.c_str(), 0, 0);
+                amx_Push(amx, m.message.length());
+                amx_PushString(amx, &amx_addr, &phys_addr, m.message.c_str(), 0, 0);
 
-				amx_Exec(amx, &amx_ret, amx_idx);
-				amx_Release(amx, amx_addr);
+                amx_Exec(amx, &amx_ret, amx_idx);
+                amx_Release(amx, amx_addr);
 
-				if (amx_ret > 0)
-				{
-					// todo: something clever with the return value...
-					// logprintf("return from amx was %d", amx_ret);
-				}
-			}
-			else
-			{
-				logprintf("ERROR: Redis amx_FindPublic returned %d for callback '%s' channel '%s'",
-						  error,
-						  m.callback.c_str(),
-						  m.channel.c_str());
-			}
+                if (amx_ret > 0) {
+                    // todo: something clever with the return value...
+                    // logprintf("return from amx was %d", amx_ret);
+                }
+            } else {
+                logprintf("ERROR: Redis amx_FindPublic returned %d for callback '%s' channel '%s'",
+                    error,
+                    m.callback.c_str(),
+                    m.channel.c_str());
+            }
 
-			message_stack.pop();
-		}
-		message_stack_mutex.unlock();
-	}
+            message_stack.pop();
+        }
+        message_stack_mutex.unlock();
+    }
 
-	return;
+    return;
 }
 
-int Redisamp::contextFromId(int context_id, redisContext *&context)
+int Impl::contextFromId(int context_id, redisContext*& context)
 {
-	try
-	{
-		context = contexts.at(context_id);
-	}
-	catch (const std::out_of_range &e)
-	{
-		return REDIS_ERROR_CONTEXT_INVALID_ID;
-	}
+    try {
+        context = contexts.at(context_id);
+    } catch (const std::out_of_range& e) {
+        return REDIS_ERROR_CONTEXT_INVALID_ID;
+    }
 
-	if (context == NULL)
-		return REDIS_ERROR_CONTEXT_MISSING_POINTER;
+    if (context == NULL)
+        return REDIS_ERROR_CONTEXT_MISSING_POINTER;
 
-	return 0;
+    return 0;
 }

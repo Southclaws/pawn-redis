@@ -51,77 +51,77 @@ using std::vector;
 #include "impl.hpp"
 #include "natives.hpp"
 
-cell Native::Connect(AMX* amx, cell* params)
+cell Natives::Connect(AMX* amx, cell* params)
 {
     string hostname = amx_GetCppString(amx, params[1]);
     int port = params[2];
     string auth = amx_GetCppString(amx, params[3]);
 
-    return Redisamp::Connect(hostname, port, auth);
+    return Impl::Connect(hostname, port, auth);
 }
 
-cell Native::Disconnect(AMX* amx, cell* params)
+cell Natives::Disconnect(AMX* amx, cell* params)
 {
     int context_id = params[1];
 
-    return Redisamp::Disconnect(context_id);
+    return Impl::Disconnect(context_id);
 }
 
-cell Native::Command(AMX* amx, cell* params)
+cell Natives::Command(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string command = amx_GetCppString(amx, params[2]);
 
-    return Redisamp::Command(context_id, command);
+    return Impl::Command(context_id, command);
 }
 
-cell Native::Exists(AMX* amx, cell* params)
+cell Natives::Exists(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
 
-    return Redisamp::Exists(context_id, key);
+    return Impl::Exists(context_id, key);
 }
 
-cell Native::SetString(AMX* amx, cell* params)
+cell Natives::SetString(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     string value = amx_GetCppString(amx, params[3]);
 
-    return Redisamp::SetString(context_id, key, value);
+    return Impl::SetString(context_id, key, value);
 }
 
-cell Native::GetString(AMX* amx, cell* params)
+cell Natives::GetString(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     string value;
     int ret;
 
-    ret = Redisamp::GetString(context_id, key, value);
+    ret = Impl::GetString(context_id, key, value);
     amx_SetCppString(amx, params[3], value, params[4]);
 
     return ret;
 }
 
-cell Native::SetInt(AMX* amx, cell* params)
+cell Natives::SetInt(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     int value = params[3];
 
-    return Redisamp::SetInt(context_id, key, value);
+    return Impl::SetInt(context_id, key, value);
 }
 
-cell Native::GetInt(AMX* amx, cell* params)
+cell Natives::GetInt(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     int value;
     int ret;
 
-    ret = Redisamp::GetInt(context_id, key, value);
+    ret = Impl::GetInt(context_id, key, value);
 
     cell* address;
     amx_GetAddr(amx, params[3], &address);
@@ -130,23 +130,23 @@ cell Native::GetInt(AMX* amx, cell* params)
     return ret;
 }
 
-cell Native::SetFloat(AMX* amx, cell* params)
+cell Natives::SetFloat(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     float value = *(float*)&params[3]; // weird float conversion
 
-    return Redisamp::SetFloat(context_id, key, value);
+    return Impl::SetFloat(context_id, key, value);
 }
 
-cell Native::GetFloat(AMX* amx, cell* params)
+cell Natives::GetFloat(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     float value;
     int ret;
 
-    ret = Redisamp::GetFloat(context_id, key, value);
+    ret = Impl::GetFloat(context_id, key, value);
 
     cell* address;
     amx_GetAddr(amx, params[3], &address);
@@ -155,53 +155,53 @@ cell Native::GetFloat(AMX* amx, cell* params)
     return ret;
 }
 
-cell Native::SetHashValue(AMX* amx, cell* params)
+cell Natives::SetHashValue(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     string inner = amx_GetCppString(amx, params[3]);
     string value = amx_GetCppString(amx, params[4]);
 
-    return Redisamp::SetHashValue(context_id, key, inner, value);
+    return Impl::SetHashValue(context_id, key, inner, value);
 }
 
-cell Native::GetHashValue(AMX* amx, cell* params)
+cell Natives::GetHashValue(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
     string inner = amx_GetCppString(amx, params[3]);
     string value;
 
-    int ret = Redisamp::GetHashValue(context_id, key, inner, value);
+    int ret = Impl::GetHashValue(context_id, key, inner, value);
     amx_SetCppString(amx, params[4], value, params[5]);
 
     return ret;
 }
 
-cell Native::SetHashValues(AMX* amx, cell* params)
+cell Natives::SetHashValues(AMX* amx, cell* params)
 {
     return 0;
 }
 
-cell Native::GetHashValues(AMX* amx, cell* params)
+cell Natives::GetHashValues(AMX* amx, cell* params)
 {
     return 0;
 }
 
-cell Native::BindMessage(AMX* amx, cell* params)
+cell Natives::BindMessage(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string channel = amx_GetCppString(amx, params[2]);
     string callback = amx_GetCppString(amx, params[3]);
 
-    return Redisamp::BindMessage(context_id, channel, callback);
+    return Impl::BindMessage(context_id, channel, callback);
 }
 
-cell Native::SendMessage(AMX* amx, cell* params)
+cell Natives::SendMessage(AMX* amx, cell* params)
 {
     int context_id = params[1];
     string channel = amx_GetCppString(amx, params[2]);
     string message = amx_GetCppString(amx, params[3]);
 
-    return Redisamp::SendMessage(context_id, channel, message);
+    return Impl::SendMessage(context_id, channel, message);
 }

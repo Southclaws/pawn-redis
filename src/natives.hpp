@@ -31,14 +31,12 @@
 
 ==============================================================================*/
 
-#ifndef SAMP_REDIS_NATIVES_H
-#define SAMP_REDIS_NATIVES_H
+#ifndef PAWN_REDIS_NATIVES_H
+#define PAWN_REDIS_NATIVES_H
 
-#include <sdk.hpp>
+#include <amx/amx.h>
 
-#include "main.hpp"
-
-namespace Native {
+namespace Natives {
 
 cell Connect(AMX* amx, cell* params);
 cell Disconnect(AMX* amx, cell* params);

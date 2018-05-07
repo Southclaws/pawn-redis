@@ -1,0 +1,11 @@
+{
+    "user": "Southclaws",
+    "repo": "pawn-redis",
+    "entry": "test.pwn",
+    "output": "test/gamemodes/test.amx",
+    "dependencies": ["Southclaws/samp-stdlib"],
+    "dev_dependencies": ["pawn-lang/YSI-Includes"],
+    "runtime": {
+        "plugins": ["Southclaws/pawn-redis"]
+    }
+}

@@ -1,6 +1,22 @@
 {
     "files.associations": {
+        "__config": "cpp",
+        "__nullptr": "cpp",
+        "exception": "cpp",
+        "initializer_list": "cpp",
+        "new": "cpp",
+        "stdexcept": "cpp",
+        "typeinfo": "cpp",
+        "iosfwd": "cpp",
+        "cstdlib": "cpp",
         "__locale": "cpp",
-        "vector": "cpp"
+        "string": "cpp",
+        "fstream": "cpp",
+        "ios": "cpp",
+        "locale": "cpp",
+        "filesystem": "cpp",
+        "xstring": "cpp",
+        "system_error": "cpp",
+        "xlocale": "cpp"
     }
 }

@@ -1,63 +1,31 @@
-GPP = g++
-OUTFILE = build/redis.so
-PWD = $(shell pwd)
+# -
+# Setup test requirements
+# -
 
-RED_DIR = src/hiredis
-SDK_DIR = src/sdk
+test-setup:
+	cd test && sampctl server ensure
+	sampctl package ensure
 
-COMPILE_FLAGS = -fpermissive -pthread -fPIC -m32 -std=c++11 -c -O3 -w -ggdb -D LINUX
-LINK_FLAGS = -Wl,--no-undefined -pthread -O2 -m32 -fshort-wchar -shared
+# -
+# Run Tests
+# -
 
-TEST_SERVER_DIR = ../samp037svr_R2-1
+test-windows:
+	sampctl package build
+	cd test && sampctl server run
 
-.DEFAULT_GOAL = test
+test-linux:
+	sampctl package build
+	cd test && sampctl server run
 
+# -
+# Build (Linux)
+# -
 
-build/amxplugin.o: $(SDK_DIR)/amxplugin.cpp
-	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/amxplugin.cpp -o build/amxplugin.o
-build/amxplugin2.o: $(SDK_DIR)/amxplugin2.cpp
-	$(GPP) $(COMPILE_FLAGS) $(SDK_DIR)/amxplugin2.cpp -o build/amxplugin2.o
+build-linux:
+	rm -rf build
+	docker build -t southclaws/pawn-redis-build .
+	docker run -v $(shell pwd)/test/plugins:/root/test/plugins southclaws/pawn-redis-build
 
-build/async.o: $(RED_DIR)/async.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/async.c -o build/async.o
-build/dict.o: $(RED_DIR)/dict.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/dict.c -o build/dict.o
-build/hiredis.o: $(RED_DIR)/hiredis.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/hiredis.c -o build/hiredis.o
-build/net.o: $(RED_DIR)/net.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/net.c -o build/net.o
-build/read.o: $(RED_DIR)/read.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/read.c -o build/read.o
-build/sds.o: $(RED_DIR)/sds.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/sds.c -o build/sds.o
-build/test.o: $(RED_DIR)/test.c
-	$(GPP) $(COMPILE_FLAGS) $(RED_DIR)/test.c -o build/test.o
-
-build/impl.o: src/impl.cpp
-	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/impl.cpp -o build/impl.o
-build/main.o: src/main.cpp
-	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/main.cpp -o build/main.o
-build/natives.o: src/natives.cpp
-	$(GPP) $(COMPILE_FLAGS) -I$(SDK_DIR) -I$(SDK_DIR)/amx src/natives.cpp -o build/natives.o
-
-$(OUTFILE): build/amxplugin.o build/amxplugin2.o build/async.o build/dict.o build/hiredis.o build/net.o build/read.o build/sds.o build/test.o build/impl.o build/main.o build/natives.o
-	$(GPP) $(LINK_FLAGS) -o $(OUTFILE) build/*.o
-
-all: $(OUTFILE)
-
-test: $(OUTFILE)
-	# 'test' assumes valid SA:MP server exists at: $(TEST_SERVER_DIR)
-	# and it's configured to load the `samp-redis-tests` gamemode script.
-	cp test/samp-redis-tests.amx $(TEST_SERVER_DIR)/gamemodes/samp-redis-tests.amx
-	cp $(OUTFILE) $(TEST_SERVER_DIR)/plugins/$(OUTFILE)
-	# now run the server
-
-build-builder:
-	docker build -t southclaws/redis-builder .
-
-run-builder: build-builder
-	docker run -v $(PWD)/build:/root/build southclaws/redis-builder
-	rm build/*.o # remove intermediate build files
-
-clean:
-	-rm build/*.o *.so
+build-inside:
+	cd build && cmake .. && make

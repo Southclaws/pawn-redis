@@ -26,8 +26,8 @@
 
 ==============================================================================*/
 
-#ifndef SAMP_REDIS_IMPL_H
-#define SAMP_REDIS_IMPL_H
+#ifndef PAWN_REDIS_IMPL_H
+#define PAWN_REDIS_IMPL_H
 
 #include <map>
 #include <mutex>
@@ -39,10 +39,9 @@
 using std::string;
 using std::vector;
 
-#include "hiredis/hiredis.h"
-#include <sdk.hpp>
+#include <cpp_redis/cpp_redis>
 
-#include "main.hpp"
+#include "common.hpp"
 
 #define REDIS_ERROR_CONNECT_GENERIC (-1)
 #define REDIS_ERROR_CONNECT_FAIL (-2)
@@ -54,33 +53,17 @@ using std::vector;
 #define REDIS_ERROR_SUBSCRIBE_THREAD_ERROR (50)
 #define REDIS_ERROR_UNEXPECTED_RESULT_TYPE (60)
 
-namespace Redisamp
-{
+namespace Impl {
 
-/*
-	Note:
-	A subscription represents an active waiting channel.
-	Since a new context must exist for each thread, I decided not to offload
-	that responsibility to the user so the plugin internally derives a new
-	context from the parent context upon subscription creation. It's likely
-	that most users will only have a single connection anyway so it's best to
-	keep it all under one single context ID in Pawn space.
-
-	Since subscriptions are mapped by channel and multiple subscriptions to the
-	same channel is illogical, this makes finding an existing subscription
-	trivial.
-*/
-struct subscription
-{
-	string channel;
-	string callback;
+struct subscription {
+    string channel;
+    string callback;
 };
 
-struct message
-{
-	string channel;
-	string message;
-	string callback;
+struct message {
+    string channel;
+    string message;
+    string callback;
 };
 
 int Connect(string hostname, int port, string auth);
@@ -89,36 +72,31 @@ int Disconnect(int context_id);
 int Command(int context_id, string command);
 int Exists(int context_id, string key);
 int SetString(int context_id, string key, string value);
-int GetString(int context_id, string key, string &value);
+int GetString(int context_id, string key, string& value);
 int SetInt(int context_id, string key, int value);
-int GetInt(int context_id, string key, int &value);
+int GetInt(int context_id, string key, int& value);
 int SetFloat(int context_id, string key, float value);
-int GetFloat(int context_id, string key, float &value);
+int GetFloat(int context_id, string key, float& value);
 
 int SetHashValue(int context_id, string key, string inner, string value);
-int GetHashValue(int context_id, string key, string inner, string &value);
+int GetHashValue(int context_id, string key, string inner, string& value);
 int SetHashValues(int context_id, string key, string inner, vector<string> value);
-int GetHashValues(int context_id, string key, string inner, vector<string> &value);
+int GetHashValues(int context_id, string key, string inner, vector<string>& value);
 
 int BindMessage(int context_id, string channel, string callback);
 int SendMessage(int context_id, string channel, string message);
 
-/*
-	Note:
-	I'm a Golang fanboy so I'm using Go's universal style:
-	Public exports begin with UpperCase, privates begin with lowerCase
-*/
-void await(const redisContext *parent, string auth, const string channel, const string callback);
-void processMessages(const redisReply *reply, const string channel, const string callback);
-void processMessage(const redisReply *reply, const string channel, const string callback);
-void amx_tick(AMX *amx);
-int contextFromId(int context_id, redisContext *&context);
+void await(const cpp_redis::client* parent, string auth, const string channel, const string callback);
+void processMessages(const cpp_redis::reply* reply, const string channel, const string callback);
+void processMessage(const cpp_redis::reply* reply, const string channel, const string callback);
+void amx_tick(AMX* amx);
+int clientFromID(int context_id, cpp_redis::client*& context);
 
 extern int context_count;
-extern std::map<int, redisContext *> contexts;
+extern std::map<int, cpp_redis::client*> clients;
 extern std::map<int, string> auths;
 extern std::map<string, string> subscriptions;
-extern std::stack<Redisamp::message> message_stack;
+extern std::stack<Impl::message> message_stack;
 extern std::mutex message_stack_mutex;
 }
 
