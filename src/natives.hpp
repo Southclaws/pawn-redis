@@ -34,7 +34,15 @@
 #ifndef PAWN_REDIS_NATIVES_H
 #define PAWN_REDIS_NATIVES_H
 
-#include <amx/amx.h>
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+#include <amx/amx2.h>
+
+#include "common.hpp"
 
 namespace Natives {
 
@@ -51,11 +59,9 @@ cell SetFloat(AMX* amx, cell* params);
 cell GetFloat(AMX* amx, cell* params);
 cell SetHashValue(AMX* amx, cell* params);
 cell GetHashValue(AMX* amx, cell* params);
-cell SetHashValues(AMX* amx, cell* params);
-cell GetHashValues(AMX* amx, cell* params);
 
-cell BindMessage(AMX* amx, cell* params);
-cell SendMessage(AMX* amx, cell* params);
+cell Subscribe(AMX* amx, cell* params);
+cell Publish(AMX* amx, cell* params);
 };
 
 #endif

@@ -42,12 +42,6 @@
 
 ==============================================================================*/
 
-#include <string>
-#include <vector>
-
-using std::string;
-using std::vector;
-
 #include "impl.hpp"
 #include "natives.hpp"
 
@@ -178,30 +172,22 @@ cell Natives::GetHashValue(AMX* amx, cell* params)
     return ret;
 }
 
-cell Natives::SetHashValues(AMX* amx, cell* params)
+cell Natives::Subscribe(AMX* amx, cell* params)
 {
-    return 0;
+	string host = amx_GetCppString(amx, params[1]);
+	int port = params[2];
+	string auth = amx_GetCppString(amx, params[3]);
+    string channel = amx_GetCppString(amx, params[4]);
+	string callback = amx_GetCppString(amx, params[5]);
+
+    return Impl::Subscribe(host, port, auth, channel, callback);
 }
 
-cell Natives::GetHashValues(AMX* amx, cell* params)
+cell Natives::Publish(AMX* amx, cell* params)
 {
-    return 0;
-}
-
-cell Natives::BindMessage(AMX* amx, cell* params)
-{
-    int context_id = params[1];
-    string channel = amx_GetCppString(amx, params[2]);
-    string callback = amx_GetCppString(amx, params[3]);
-
-    return Impl::BindMessage(context_id, channel, callback);
-}
-
-cell Natives::SendMessage(AMX* amx, cell* params)
-{
-    int context_id = params[1];
+    int pubsub_id = params[1];
     string channel = amx_GetCppString(amx, params[2]);
     string message = amx_GetCppString(amx, params[3]);
 
-    return Impl::SendMessage(context_id, channel, message);
+    return Impl::Publish(pubsub_id, channel, message);
 }

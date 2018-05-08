@@ -14,9 +14,15 @@ endif()
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/test/plugins)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/test/plugins)
+set(CMAKE_BUILD_TYPE Release)
+set(BUILD_SHARED_LIBS 0)
 
+set(BUILD_EXAMPLES OFF)
+set(BUILD_TESTS OFF)
+
+include_directories(lib/cpp_redis/tacopie/includes)
 add_subdirectory(lib/cpp_redis)
 include_directories(lib/cpp_redis/includes)
+
 add_subdirectory(src)

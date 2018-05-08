@@ -20,3 +20,4 @@ add_samp_plugin(pawn-redis
 	natives.hpp
 	plugin.def
 )
+target_link_libraries(pawn-redis cpp_redis)

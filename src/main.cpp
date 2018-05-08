@@ -37,14 +37,14 @@ using std::set;
 #include "impl.hpp"
 #include "natives.hpp"
 
+logprintf_t logprintf;
+
 /*==============================================================================
 
 	Load/Unload and AMX management
 
 ==============================================================================*/
 
-extern void* pAMXFunctions;
-logprintf_t logprintf_fp;
 set<AMX*> amx_list;
 
 extern "C" const AMX_NATIVE_INFO native_list[] = {
@@ -61,11 +61,9 @@ extern "C" const AMX_NATIVE_INFO native_list[] = {
     { "Redis_GetFloat", Natives::GetFloat },
     { "Redis_SetHashValue", Natives::SetHashValue },
     { "Redis_GetHashValue", Natives::GetHashValue },
-    { "Redis_SetHashValues", Natives::SetHashValues },
-    { "Redis_GetHashValues", Natives::GetHashValues },
 
-    { "Redis_BindMessage", Natives::BindMessage },
-    { "Redis_SendMessage", Natives::SendMessage },
+    { "Redis_Subscribe", Natives::Subscribe },
+    { "Redis_Publish", Natives::Publish },
 
     { NULL, NULL }
 };
@@ -73,7 +71,7 @@ extern "C" const AMX_NATIVE_INFO native_list[] = {
 PLUGIN_EXPORT bool PLUGIN_CALL Load(void** ppData)
 {
     pAMXFunctions = ppData[PLUGIN_DATA_AMX_EXPORTS];
-    logprintf_fp = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
+    logprintf = (logprintf_t)ppData[PLUGIN_DATA_LOGPRINTF];
 
     logprintf("\n");
     logprintf("SA:MP Redis - Redis for SA:MP by Southclaws");
@@ -90,7 +88,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
     for (AMX* i : amx_list) {
-        Redisamp::amx_tick(i);
+        Impl::amx_tick(i);
     }
 }
 

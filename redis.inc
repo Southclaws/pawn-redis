@@ -53,8 +53,6 @@ native Redis_GetFloat(Redis:context, key[], &Float:value);
 
 native Redis_SetHashValue(Redis:context, key[], inner_key[], value[]);
 native Redis_GetHashValue(Redis:context, key[], inner_key[], value[], len = sizeof(value));
-native Redis_SetHashValues(Redis:context, key[], ...);
-native Redis_GetHashValues(Redis:context, key[], values[][]);
 
-native Redis_BindMessage(Redis:context, channel[], callback[]);
-native Redis_SendMessage(Redis:context, channel[], data[]);
+native PubSub:Redis_Subscribe(const host[], port, const auth[], const channel[], const callback[]);
+native Redis_Publish(PubSub:client, const channel[], const data[]);

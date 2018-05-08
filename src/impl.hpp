@@ -29,8 +29,10 @@
 #ifndef PAWN_REDIS_IMPL_H
 #define PAWN_REDIS_IMPL_H
 
+#include <iterator>
 #include <map>
 #include <mutex>
+#include <sstream>
 #include <stack>
 #include <string>
 #include <thread>
@@ -40,20 +42,33 @@ using std::string;
 using std::vector;
 
 #include <cpp_redis/cpp_redis>
+#include <amx/amx2.h>
 
 #include "common.hpp"
 
-#define REDIS_ERROR_CONNECT_GENERIC (-1)
-#define REDIS_ERROR_CONNECT_FAIL (-2)
-#define REDIS_ERROR_CONNECT_AUTH (-3)
-#define REDIS_ERROR_CONTEXT_INVALID_ID (10)
-#define REDIS_ERROR_CONTEXT_MISSING_POINTER (20)
-#define REDIS_ERROR_COMMAND_BAD_REPLY (30)
-#define REDIS_ERROR_COMMAND_NO_REPLY (40)
-#define REDIS_ERROR_SUBSCRIBE_THREAD_ERROR (50)
-#define REDIS_ERROR_UNEXPECTED_RESULT_TYPE (60)
-
 namespace Impl {
+
+enum E_REDIS_ERROR {
+	REDIS_ERROR_CONNECT_GENERIC = -1,
+	REDIS_ERROR_CONNECT_FAIL = -2,
+	REDIS_ERROR_CONNECT_AUTH = -3,
+	REDIS_ERROR_CONTEXT_INVALID_ID = 10,
+	REDIS_ERROR_CONTEXT_MISSING_POINTER = 20,
+	REDIS_ERROR_COMMAND_BAD_REPLY = 30,
+	REDIS_ERROR_COMMAND_NO_REPLY = 40,
+	REDIS_ERROR_SUBSCRIBE_THREAD_ERROR = 50,
+	REDIS_ERROR_UNEXPECTED_RESULT_TYPE = 60,
+	REDIS_ERROR_INTERNAL_ERROR = 70
+};
+
+struct clientData {
+	cpp_redis::client* client;
+	std::string host;
+	int port;
+	std::string auth;
+	bool isPubSub;
+	cpp_redis::subscriber* subscriber;
+};
 
 struct subscription {
     string channel;
@@ -62,39 +77,35 @@ struct subscription {
 
 struct message {
     string channel;
-    string message;
+    string msg;
     string callback;
 };
 
 int Connect(string hostname, int port, string auth);
-int Disconnect(int context_id);
+int Disconnect(int client_id);
 
-int Command(int context_id, string command);
-int Exists(int context_id, string key);
-int SetString(int context_id, string key, string value);
-int GetString(int context_id, string key, string& value);
-int SetInt(int context_id, string key, int value);
-int GetInt(int context_id, string key, int& value);
-int SetFloat(int context_id, string key, float value);
-int GetFloat(int context_id, string key, float& value);
+int Command(int client_id, string command);
+int Exists(int client_id, string key);
+int SetString(int client_id, string key, string value);
+int GetString(int client_id, string key, string& value);
+int SetInt(int client_id, string key, int value);
+int GetInt(int client_id, string key, int& value);
+int SetFloat(int client_id, string key, float value);
+int GetFloat(int client_id, string key, float& value);
 
-int SetHashValue(int context_id, string key, string inner, string value);
-int GetHashValue(int context_id, string key, string inner, string& value);
-int SetHashValues(int context_id, string key, string inner, vector<string> value);
-int GetHashValues(int context_id, string key, string inner, vector<string>& value);
+int SetHashValue(int client_id, string key, string inner, string value);
+int GetHashValue(int client_id, string key, string inner, string& value);
 
-int BindMessage(int context_id, string channel, string callback);
-int SendMessage(int context_id, string channel, string message);
+int Subscribe(string host, int port, string auth, string channel, string callback);
+int Publish(int client_id, string channel, string message);
 
-void await(const cpp_redis::client* parent, string auth, const string channel, const string callback);
-void processMessages(const cpp_redis::reply* reply, const string channel, const string callback);
-void processMessage(const cpp_redis::reply* reply, const string channel, const string callback);
+int clientFromID(int client_id, cpp_redis::client*& client);
+int clientDataFromID(int client_id, clientData& client);
 void amx_tick(AMX* amx);
-int clientFromID(int context_id, cpp_redis::client*& context);
+std::vector<std::string> split(const std::string& s);
 
 extern int context_count;
-extern std::map<int, cpp_redis::client*> clients;
-extern std::map<int, string> auths;
+extern std::map<int, clientData> clients;
 extern std::map<string, string> subscriptions;
 extern std::stack<Impl::message> message_stack;
 extern std::mutex message_stack_mutex;
