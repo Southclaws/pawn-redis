@@ -8,6 +8,8 @@ if(UNIX)
 	set(CMAKE_CXX_FLAGS "-m32 -fvisibility=hidden")
 	set(CMAKE_C_FLAGS "-m32 -fvisibility=hidden")
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+else()
+	set(MSVC_RUNTIME_LIBRARY_CONFIG "/MD")
 endif()
 
 # removes the sprintf warnings from plugin-natives
