@@ -42,16 +42,20 @@
 
 ==============================================================================*/
 
-#include "impl.hpp"
 #include "natives.hpp"
+#include "impl.hpp"
 
 cell Natives::Connect(AMX* amx, cell* params)
 {
     string hostname = amx_GetCppString(amx, params[1]);
     int port = params[2];
     string auth = amx_GetCppString(amx, params[3]);
+    cell* addr;
+    amx_GetAddr(amx, params[4], &addr);
 
-    return Impl::Connect(hostname, port, auth);
+    int ret = Impl::Connect(hostname, port, auth, *addr);
+
+    return ret;
 }
 
 cell Natives::Disconnect(AMX* amx, cell* params)
@@ -174,11 +178,11 @@ cell Natives::GetHashValue(AMX* amx, cell* params)
 
 cell Natives::Subscribe(AMX* amx, cell* params)
 {
-	string host = amx_GetCppString(amx, params[1]);
-	int port = params[2];
-	string auth = amx_GetCppString(amx, params[3]);
+    string host = amx_GetCppString(amx, params[1]);
+    int port = params[2];
+    string auth = amx_GetCppString(amx, params[3]);
     string channel = amx_GetCppString(amx, params[4]);
-	string callback = amx_GetCppString(amx, params[5]);
+    string callback = amx_GetCppString(amx, params[5]);
 
     return Impl::Subscribe(host, port, auth, channel, callback);
 }

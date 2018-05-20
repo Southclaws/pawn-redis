@@ -6,6 +6,14 @@ test-setup:
 	cd test && sampctl server ensure
 	sampctl package ensure
 
+redis:
+	-docker stop redis
+	-docker rm redis
+	docker run \
+		--name redis \
+		--publish 6379:6379 \
+		--detach \
+		redis
 # -
 # Run Tests
 # -

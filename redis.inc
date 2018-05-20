@@ -39,20 +39,20 @@
 #define REDIS_REPLY_STATUS					(5)
 #define REDIS_REPLY_ERROR					(6)
 
-native Redis:Redis_Connect(host[], port, auth[]);
-native Redis_Disconnect(Redis:context);
+native Redis_Connect(host[], port, auth[], &Redis:client);
+native Redis_Disconnect(Redis:client);
 
-native Redis_Command(Redis:context, command[]);
-native Redis_Exists(Redis:context, key[]);
-native Redis_SetString(Redis:context, key[], value[]);
-native Redis_GetString(Redis:context, key[], value[], len = sizeof(value));
-native Redis_SetInt(Redis:context, key[], value);
-native Redis_GetInt(Redis:context, key[], &value);
-native Redis_SetFloat(Redis:context, key[], Float:value);
-native Redis_GetFloat(Redis:context, key[], &Float:value);
+native Redis_Command(Redis:client, command[]);
+native Redis_Exists(Redis:client, key[]);
+native Redis_SetString(Redis:client, key[], value[]);
+native Redis_GetString(Redis:client, key[], value[], len = sizeof(value));
+native Redis_SetInt(Redis:client, key[], value);
+native Redis_GetInt(Redis:client, key[], &value);
+native Redis_SetFloat(Redis:client, key[], Float:value);
+native Redis_GetFloat(Redis:client, key[], &Float:value);
 
-native Redis_SetHashValue(Redis:context, key[], inner_key[], value[]);
-native Redis_GetHashValue(Redis:context, key[], inner_key[], value[], len = sizeof(value));
+native Redis_SetHashValue(Redis:client, key[], inner_key[], value[]);
+native Redis_GetHashValue(Redis:client, key[], inner_key[], value[], len = sizeof(value));
 
 native PubSub:Redis_Subscribe(const host[], port, const auth[], const channel[], const callback[]);
 native Redis_Publish(PubSub:client, const channel[], const data[]);

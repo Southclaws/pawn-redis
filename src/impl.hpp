@@ -41,33 +41,21 @@
 using std::string;
 using std::vector;
 
-#include <cpp_redis/cpp_redis>
+#define __CPP_REDIS_LOGGING_ENABLED
 #include <amx/amx2.h>
+#include <cpp_redis/cpp_redis>
 
 #include "common.hpp"
 
 namespace Impl {
 
-enum E_REDIS_ERROR {
-	REDIS_ERROR_CONNECT_GENERIC = -1,
-	REDIS_ERROR_CONNECT_FAIL = -2,
-	REDIS_ERROR_CONNECT_AUTH = -3,
-	REDIS_ERROR_CONTEXT_INVALID_ID = 10,
-	REDIS_ERROR_CONTEXT_MISSING_POINTER = 20,
-	REDIS_ERROR_COMMAND_BAD_REPLY = 30,
-	REDIS_ERROR_COMMAND_NO_REPLY = 40,
-	REDIS_ERROR_SUBSCRIBE_THREAD_ERROR = 50,
-	REDIS_ERROR_UNEXPECTED_RESULT_TYPE = 60,
-	REDIS_ERROR_INTERNAL_ERROR = 70
-};
-
 struct clientData {
-	cpp_redis::client* client;
-	std::string host;
-	int port;
-	std::string auth;
-	bool isPubSub;
-	cpp_redis::subscriber* subscriber;
+    cpp_redis::client* client;
+    std::string host;
+    int port;
+    std::string auth;
+    bool isPubSub;
+    cpp_redis::subscriber* subscriber;
 };
 
 struct subscription {
@@ -81,7 +69,7 @@ struct message {
     string callback;
 };
 
-int Connect(string hostname, int port, string auth);
+int Connect(string hostname, int port, string auth, int& id);
 int Disconnect(int client_id);
 
 int Command(int client_id, string command);

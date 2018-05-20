@@ -48,3 +48,4 @@ build/
 .vs/
 *.so
 *.o
+crashinfo.txt
