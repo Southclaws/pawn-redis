@@ -28,13 +28,15 @@ Test:DisconnectInvalid()
 }
 
 
-/*
-	Simple ping
-*/
+// -
+// Simple ping
+// -
+
 new Redis:client_ping;
 TestInit:Ping()
 {
-	client_ping = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_ping);
+	ASSERT(ret == 0);
 }
 
 Test:Ping()
@@ -50,13 +52,15 @@ TestClose:Ping()
 }
 
 
-/*
-	Set a string key then check if it exists.
-*/
+// -
+// Set a string key then check if it exists.
+// -
+
 new Redis:client_exists;
 TestInit:CheckExists()
 {
-	client_exists = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_exists);
+	ASSERT(ret == 0);
 }
 
 Test:CheckExists()
@@ -80,13 +84,15 @@ TestClose:CheckExists()
 }
 
 
-/*
-	Set a string key then get it and compare the value.
-*/
+// -
+// Set a string key then get it and compare the value.
+// -
+
 new Redis:client_setgetstr;
 TestInit:SetThenGetString()
 {
-	client_setgetstr = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_setgetstr);
+	ASSERT(ret == 0);
 }
 
 Test:SetThenGetString()
@@ -112,13 +118,15 @@ TestClose:SetThenGetString()
 }
 
 
-/*
-	Set an int key then get it and compare the value.
-*/
+// -
+// Set an int key then get it and compare the value.
+// -
+
 new Redis:client_setgetint;
 TestInit:SetThenGetInt()
 {
-	client_setgetint = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_setgetint);
+	ASSERT(ret == 0);
 }
 
 Test:SetThenGetInt()
@@ -144,13 +152,15 @@ TestClose:SetThenGetInt()
 }
 
 
-/*
-	Set a float key then get it and compare the value.
-*/
+// -
+// Set a float key then get it and compare the value.
+// -
+
 new Redis:client_setgetfloat;
 TestInit:SetThenGetFloat()
 {
-	client_setgetfloat = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_setgetfloat);
+	ASSERT(ret == 0);
 }
 
 Test:SetThenGetFloat()
@@ -175,14 +185,16 @@ TestClose:SetThenGetFloat()
 	Redis_Disconnect(client_setgetfloat);
 }
 
+#endinput
+// -
+// Bind a callback to a message channel
+// -
 
-/*
-	Bind a callback to a message channel
-*/
 new Redis:client_bind_1;
 TestInit:MessageBindReply()
 {
-	client_bind_1 = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_bind_1);
+	ASSERT(ret == 0);
 }
 
 Test:MessageBindReply()
@@ -212,13 +224,15 @@ public Receive(data[])
 }
 
 
-/*
-	Bind multiple callbacks to multiple message channels.
-*/
+// -
+// Bind multiple callbacks to multiple message channels.
+// -
+
 new Redis:client_bind_2;
 TestInit:MultiMessage()
 {
-	client_bind_2 = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_bind_2);
+	ASSERT(ret == 0);
 }
 
 Test:MultiMessage()
@@ -256,13 +270,15 @@ public Receive2(data[])
 }
 
 
-/*
-	Bind a callback to a message channel and wait a little for a reply.
-*/
+// -
+// Bind a callback to a message channel and wait a little for a reply.
+// -
+
 new Redis:client_bind_3;
 TestInit:DeferredMessage()
 {
-	client_bind_3 = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_bind_3);
+	ASSERT(ret == 0);
 }
 
 Test:DeferredMessage()
@@ -293,13 +309,15 @@ public ReceiveLater(data[])
 }
 
 
-/*
-	Set a hash and check the get value
-*/
+// -
+// Set a hash and check the get value
+// -
+
 new Redis:client_hash_1;
 TestInit:SetThenGetHashValue()
 {
-	client_hash_1 = Redis_Connect("localhost", 6379, "");
+	new ret = Redis_Connect("localhost", 6379, "", client_hash_1);
+	ASSERT(ret == 0);
 }
 
 Test:SetThenGetHashValue()

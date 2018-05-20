@@ -38,11 +38,8 @@
 #include <thread>
 #include <vector>
 
-using std::string;
-using std::vector;
-
-#define __CPP_REDIS_LOGGING_ENABLED
 #include <amx/amx2.h>
+#include <cpp_redis/misc/logger.hpp>
 #include <cpp_redis/cpp_redis>
 
 #include "common.hpp"
@@ -59,33 +56,33 @@ struct clientData {
 };
 
 struct subscription {
-    string channel;
-    string callback;
+    std::string channel;
+    std::string callback;
 };
 
 struct message {
-    string channel;
-    string msg;
-    string callback;
+    std::string channel;
+    std::string msg;
+    std::string callback;
 };
 
-int Connect(string hostname, int port, string auth, int& id);
+int Connect(std::string hostname, int port, std::string auth, int& id);
 int Disconnect(int client_id);
 
-int Command(int client_id, string command);
-int Exists(int client_id, string key);
-int SetString(int client_id, string key, string value);
-int GetString(int client_id, string key, string& value);
-int SetInt(int client_id, string key, int value);
-int GetInt(int client_id, string key, int& value);
-int SetFloat(int client_id, string key, float value);
-int GetFloat(int client_id, string key, float& value);
+int Command(int client_id, std::string command);
+int Exists(int client_id, std::string key);
+int SetString(int client_id, std::string key, std::string value);
+int GetString(int client_id, std::string key, std::string& value);
+int SetInt(int client_id, std::string key, int value);
+int GetInt(int client_id, std::string key, int& value);
+int SetFloat(int client_id, std::string key, float value);
+int GetFloat(int client_id, std::string key, float& value);
 
-int SetHashValue(int client_id, string key, string inner, string value);
-int GetHashValue(int client_id, string key, string inner, string& value);
+int SetHashValue(int client_id, std::string key, std::string inner, std::string value);
+int GetHashValue(int client_id, std::string key, std::string inner, std::string& value);
 
-int Subscribe(string host, int port, string auth, string channel, string callback);
-int Publish(int client_id, string channel, string message);
+int Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback);
+int Publish(int client_id, std::string channel, std::string message);
 
 int clientFromID(int client_id, cpp_redis::client*& client);
 int clientDataFromID(int client_id, clientData& client);
@@ -94,7 +91,7 @@ std::vector<std::string> split(const std::string& s);
 
 extern int context_count;
 extern std::map<int, clientData> clients;
-extern std::map<string, string> subscriptions;
+extern std::map<std::string, std::string> subscriptions;
 extern std::stack<Impl::message> message_stack;
 extern std::mutex message_stack_mutex;
 }

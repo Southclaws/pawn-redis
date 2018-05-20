@@ -25,22 +25,11 @@
 
 ==============================================================================*/
 
-#include <cstring>
-#include <map>
-#include <mutex>
-#include <stack>
-#include <string>
-#include <thread>
-
-using std::string;
-
-#include <amx/amx.h>
-
 #include "impl.hpp"
 
 int Impl::context_count;
 std::map<int, Impl::clientData> Impl::clients;
-std::map<string, string> Impl::subscriptions;
+std::map<std::string, std::string> Impl::subscriptions;
 std::stack<Impl::message> Impl::message_stack;
 std::mutex Impl::message_stack_mutex;
 
@@ -60,7 +49,7 @@ std::mutex Impl::message_stack_mutex;
         - `-1`: generic error
         - `-2`: cannot allocate redis context
 */
-int Impl::Connect(string host, int port, string auth, int& id)
+int Impl::Connect(std::string host, int port, std::string auth, int& id)
 {
     cpp_redis::client* client = new cpp_redis::client();
     try {
@@ -103,7 +92,7 @@ int Impl::Disconnect(int client_id)
     return 0;
 }
 
-int Impl::Command(int client_id, string command)
+int Impl::Command(int client_id, std::string command)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -111,7 +100,7 @@ int Impl::Command(int client_id, string command)
         return 1;
     }
 
-    vector<string> cmd = split(command);
+	std::vector<std::string> cmd = split(command);
     auto r = client->send(cmd).get();
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
@@ -121,7 +110,7 @@ int Impl::Command(int client_id, string command)
     return 0;
 }
 
-int Impl::Exists(int client_id, string key)
+int Impl::Exists(int client_id, std::string key)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -129,19 +118,22 @@ int Impl::Exists(int client_id, string key)
         return 0;
     }
 
-    int result = 0;
-    auto r = client->exists(std::vector<std::string>{ key }).get();
+    logprintf("creating req");
+    auto req = client->exists(std::vector<std::string>{ key });
+
+    logprintf("waiting on req");
+    auto r = req.get();
+
+    logprintf("checking err");
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
-        result = 0;
-    } else {
-        result = static_cast<int>(r.as_integer());
+        return 0;
     }
 
-    return result;
+    return static_cast<int>(r.as_integer());
 }
 
-int Impl::SetString(int client_id, string key, string value)
+int Impl::SetString(int client_id, std::string key, std::string value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -158,7 +150,7 @@ int Impl::SetString(int client_id, string key, string value)
     return 0;
 }
 
-int Impl::GetString(int client_id, string key, string& value)
+int Impl::GetString(int client_id, std::string key, std::string& value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -181,7 +173,7 @@ int Impl::GetString(int client_id, string key, string& value)
     return 0;
 }
 
-int Impl::SetInt(int client_id, string key, int value)
+int Impl::SetInt(int client_id, std::string key, int value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -198,7 +190,7 @@ int Impl::SetInt(int client_id, string key, int value)
     return 0;
 }
 
-int Impl::GetInt(int client_id, string key, int& value)
+int Impl::GetInt(int client_id, std::string key, int& value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -221,7 +213,7 @@ int Impl::GetInt(int client_id, string key, int& value)
     return 0;
 }
 
-int Impl::SetFloat(int client_id, string key, float value)
+int Impl::SetFloat(int client_id, std::string key, float value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -238,7 +230,7 @@ int Impl::SetFloat(int client_id, string key, float value)
     return 0;
 }
 
-int Impl::GetFloat(int client_id, string key, float& value)
+int Impl::GetFloat(int client_id, std::string key, float& value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -261,7 +253,7 @@ int Impl::GetFloat(int client_id, string key, float& value)
     return 0;
 }
 
-int Impl::SetHashValue(int client_id, string key, string inner, string value)
+int Impl::SetHashValue(int client_id, std::string key, std::string inner, std::string value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -281,7 +273,7 @@ int Impl::SetHashValue(int client_id, string key, string inner, string value)
     return 0;
 }
 
-int Impl::GetHashValue(int client_id, string key, string inner, string& value)
+int Impl::GetHashValue(int client_id, std::string key, std::string inner, std::string& value)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
@@ -304,7 +296,7 @@ int Impl::GetHashValue(int client_id, string key, string inner, string& value)
     return 0;
 }
 
-int Impl::Subscribe(string host, int port, string auth, string channel, string callback)
+int Impl::Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback)
 {
     cpp_redis::subscriber* sub = new cpp_redis::subscriber();
     sub->connect(host, port);
@@ -332,7 +324,7 @@ int Impl::Subscribe(string host, int port, string auth, string channel, string c
     return context_count++;
 }
 
-int Impl::Publish(int client_id, string channel, string data)
+int Impl::Publish(int client_id, std::string channel, std::string data)
 {
     cpp_redis::client* client;
     int err = clientFromID(client_id, client);
