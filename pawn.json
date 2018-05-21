@@ -10,12 +10,12 @@
     },
     "resources": [
         {
-            "name": "pawn-redis.so",
+            "name": "redis.so",
             "archive": false,
             "platform": "linux"
         },
         {
-            "name": "pawn-redis.dll",
+            "name": "redis.dll",
             "archive": false,
             "platform": "windows"
         }
