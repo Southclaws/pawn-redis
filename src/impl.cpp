@@ -60,7 +60,10 @@ int Impl::Connect(std::string host, int port, std::string auth, int& id)
     }
 
     if (auth.length() > 0) {
-        auto r = client->auth(auth).get();
+        auto req = client->auth(auth);
+        client->sync_commit();
+        auto r = req.get();
+
         if (r.is_error()) {
             logprintf("ERROR: %s", r.error().c_str());
             return 2;
@@ -100,8 +103,11 @@ int Impl::Command(int client_id, std::string command)
         return 1;
     }
 
-	std::vector<std::string> cmd = split(command);
-    auto r = client->send(cmd).get();
+    std::vector<std::string> cmd = split(command);
+    auto req = client->send(cmd);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -118,13 +124,10 @@ int Impl::Exists(int client_id, std::string key)
         return 0;
     }
 
-    logprintf("creating req");
     auto req = client->exists(std::vector<std::string>{ key });
-
-    logprintf("waiting on req");
+    client->sync_commit();
     auto r = req.get();
 
-    logprintf("checking err");
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 0;
@@ -141,7 +144,10 @@ int Impl::SetString(int client_id, std::string key, std::string value)
         return 1;
     }
 
-    auto r = client->set(key, value).get();
+    auto req = client->set(key, value);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 1;
@@ -158,7 +164,10 @@ int Impl::GetString(int client_id, std::string key, std::string& value)
         return 1;
     }
 
-    auto r = client->get(key).get();
+    auto req = client->get(key);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 1;
@@ -181,7 +190,10 @@ int Impl::SetInt(int client_id, std::string key, int value)
         return 1;
     }
 
-    auto r = client->set(key, std::to_string(value)).get();
+    auto req = client->set(key, std::to_string(value));
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -198,7 +210,10 @@ int Impl::GetInt(int client_id, std::string key, int& value)
         return 1;
     }
 
-    auto r = client->get(key).get();
+    auto req = client->get(key);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -221,7 +236,10 @@ int Impl::SetFloat(int client_id, std::string key, float value)
         return 1;
     }
 
-    auto r = client->set(key, std::to_string(value)).get();
+    auto req = client->set(key, std::to_string(value));
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 1;
@@ -238,7 +256,10 @@ int Impl::GetFloat(int client_id, std::string key, float& value)
         return 1;
     }
 
-    auto r = client->get(key).get();
+    auto req = client->get(key);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -261,7 +282,10 @@ int Impl::SetHashValue(int client_id, std::string key, std::string inner, std::s
         return 1;
     }
 
-    auto r = client->hset(key, inner, value).get();
+    auto req = client->hset(key, inner, value);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -281,7 +305,10 @@ int Impl::GetHashValue(int client_id, std::string key, std::string inner, std::s
         return 1;
     }
 
-    auto r = client->hget(key, inner).get();
+    auto req = client->hget(key, inner);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -332,7 +359,10 @@ int Impl::Publish(int client_id, std::string channel, std::string data)
         return 1;
     }
 
-    auto r = client->publish(channel, data).get();
+    auto req = client->publish(channel, data);
+    client->sync_commit();
+    auto r = req.get();
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;

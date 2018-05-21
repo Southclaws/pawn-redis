@@ -24,7 +24,7 @@ Test:DisconnectInvalid()
 {
 	new ret = Redis_Disconnect(Redis:2835672);
 	printf("ret: %d", ret);
-	ASSERT(ret == REDIS_ERROR_CONTEXT_INVALID_ID);
+	ASSERT(ret == 1);
 }
 
 

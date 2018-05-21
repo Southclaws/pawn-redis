@@ -23,6 +23,10 @@
         "type_traits": "cpp",
         "xfunctional": "cpp",
         "xstddef": "cpp",
-        "xtr1common": "cpp"
+        "xtr1common": "cpp",
+        "deque": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp"
     }
 }
