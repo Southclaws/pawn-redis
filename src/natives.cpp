@@ -153,29 +153,6 @@ cell Natives::GetFloat(AMX* amx, cell* params)
     return ret;
 }
 
-cell Natives::SetHashValue(AMX* amx, cell* params)
-{
-    int context_id = params[1];
-    string key = amx_GetCppString(amx, params[2]);
-    string inner = amx_GetCppString(amx, params[3]);
-    string value = amx_GetCppString(amx, params[4]);
-
-    return Impl::SetHashValue(context_id, key, inner, value);
-}
-
-cell Natives::GetHashValue(AMX* amx, cell* params)
-{
-    int context_id = params[1];
-    string key = amx_GetCppString(amx, params[2]);
-    string inner = amx_GetCppString(amx, params[3]);
-    string value;
-
-    int ret = Impl::GetHashValue(context_id, key, inner, value);
-    amx_SetCppString(amx, params[4], value, params[5]);
-
-    return ret;
-}
-
 cell Natives::Subscribe(AMX* amx, cell* params)
 {
     string host = amx_GetCppString(amx, params[1]);
@@ -184,7 +161,9 @@ cell Natives::Subscribe(AMX* amx, cell* params)
     string channel = amx_GetCppString(amx, params[4]);
     string callback = amx_GetCppString(amx, params[5]);
 
-    return Impl::Subscribe(host, port, auth, channel, callback);
+	cell* addr;
+	amx_GetAddr(amx, params[6], &addr);
+    return Impl::Subscribe(host, port, auth, channel, callback, *addr);
 }
 
 cell Natives::Publish(AMX* amx, cell* params)

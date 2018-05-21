@@ -59,8 +59,6 @@ extern "C" const AMX_NATIVE_INFO native_list[] = {
     { "Redis_GetInt", Natives::GetInt },
     { "Redis_SetFloat", Natives::SetFloat },
     { "Redis_GetFloat", Natives::GetFloat },
-    { "Redis_SetHashValue", Natives::SetHashValue },
-    { "Redis_GetHashValue", Natives::GetHashValue },
 
     { "Redis_Subscribe", Natives::Subscribe },
     { "Redis_Publish", Natives::Publish },

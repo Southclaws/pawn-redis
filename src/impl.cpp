@@ -274,60 +274,14 @@ int Impl::GetFloat(int client_id, std::string key, float& value)
     return 0;
 }
 
-int Impl::SetHashValue(int client_id, std::string key, std::string inner, std::string value)
-{
-    cpp_redis::client* client;
-    int err = clientFromID(client_id, client);
-    if (err) {
-        return 1;
-    }
-
-    auto req = client->hset(key, inner, value);
-    client->sync_commit();
-    auto r = req.get();
-
-    if (r.is_error()) {
-        logprintf("ERROR: %s", r.error().c_str());
-        return 2;
-    }
-    if (r.get_type() != cpp_redis::reply::type::integer) {
-        return 3;
-    }
-
-    return 0;
-}
-
-int Impl::GetHashValue(int client_id, std::string key, std::string inner, std::string& value)
-{
-    cpp_redis::client* client;
-    int err = clientFromID(client_id, client);
-    if (err) {
-        return 1;
-    }
-
-    auto req = client->hget(key, inner);
-    client->sync_commit();
-    auto r = req.get();
-
-    if (r.is_error()) {
-        logprintf("ERROR: %s", r.error().c_str());
-        return 2;
-    } else if (r.get_type() == cpp_redis::reply::type::null) {
-        return 3;
-    } else if (r.get_type() != cpp_redis::reply::type::simple_string) {
-        return 4;
-    } else {
-        value = r.as_string();
-    }
-
-    return 0;
-}
-
-int Impl::Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback)
+int Impl::Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback, int& id)
 {
     cpp_redis::subscriber* sub = new cpp_redis::subscriber();
     sub->connect(host, port);
-    sub->auth(auth);
+
+    if (auth.length() > 0) {
+        sub->auth(auth);
+    }
 
     sub->subscribe(channel, [callback](const std::string& chan, const std::string& msg) {
         message m;
@@ -348,7 +302,9 @@ int Impl::Subscribe(std::string host, int port, std::string auth, std::string ch
     cd.isPubSub = true;
     clients[context_count] = cd;
 
-    return context_count++;
+    id = context_count++;
+
+    return 0;
 }
 
 int Impl::Publish(int client_id, std::string channel, std::string data)
@@ -359,14 +315,19 @@ int Impl::Publish(int client_id, std::string channel, std::string data)
         return 1;
     }
 
+    logprintf("publishing");
     auto req = client->publish(channel, data);
+    logprintf("sync");
     client->sync_commit();
+    logprintf("get r");
     auto r = req.get();
-
+    logprintf("got r");
     if (r.is_error()) {
+        logprintf("err");
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
     }
+    logprintf("end");
 
     return 0;
 }

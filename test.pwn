@@ -185,42 +185,42 @@ TestClose:SetThenGetFloat()
 	Redis_Disconnect(client_setgetfloat);
 }
 
-#endinput
+
 // -
 // Bind a callback to a message channel
 // -
 
-new Redis:client_bind_1;
+new PubSub:pubsub_1;
+new Redis:client_pubsub_1;
 TestInit:MessageBindReply()
 {
-	new ret = Redis_Connect("localhost", 6379, "", client_bind_1);
+	new ret = Redis_Subscribe("localhost", 6379, "", "samp.test.1", "Receive", pubsub_1);
+	ASSERT(ret == 0);
+
+	ret = Redis_Connect("localhost", 6379, "", client_pubsub_1);
 	ASSERT(ret == 0);
 }
 
 Test:MessageBindReply()
 {
-	new ret = Redis_BindMessage(client_bind_1, "samp.test.1", "Receive");
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-
-	ret = Redis_SendMessage(client_bind_1, "samp.test.1", "hello world!");
+	new ret = Redis_Publish(client_pubsub_1, "samp.test.1", "hello world!");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 }
 
 TestClose:MessageBindReply()
 {
-	Redis_Disconnect(client_bind_1);
+	// Redis_Unsubscribe(pubsub_1);
 }
 
 forward Receive(data[]);
 public Receive(data[])
 {
-	if(!strcmp(data, "hello world!"))
+	if(!strcmp(data, "hello world!")) {
 		printf("\n\nPASS!\n\n*** Redis bind message callback 'Receive' returned the correct value: '%s' test passed!", data);
-
-	else
+	} else {
 		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive' returned the incorrect value: '%s'", data);
+	}
 }
 
 
@@ -228,35 +228,37 @@ public Receive(data[])
 // Bind multiple callbacks to multiple message channels.
 // -
 
-new Redis:client_bind_2;
+new PubSub:pubsub_2;
+new Redis:client_pubsub_2;
 TestInit:MultiMessage()
 {
-	new ret = Redis_Connect("localhost", 6379, "", client_bind_2);
+	new ret = Redis_Subscribe("localhost", 6379, "", "samp.test.2", "Receive", pubsub_2);
+	ASSERT(ret == 0);
+
+	ret = Redis_Connect("localhost", 6379, "", client_pubsub_2);
 	ASSERT(ret == 0);
 }
 
 Test:MultiMessage()
 {
-	new ret = Redis_BindMessage(client_bind_2, "samp.test.2", "Receive2");
+	new ret;
+
+	ret = Redis_Publish(client_pubsub_2, "samp.test.2", "to receive2");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
-	ret = Redis_SendMessage(client_bind_2, "samp.test.2", "to receive2");
+	ret = Redis_Publish(client_pubsub_2, "samp.test.2", "to receive2");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 
-	ret = Redis_SendMessage(client_bind_2, "samp.test.2", "to receive2");
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-
-	ret = Redis_SendMessage(client_bind_2, "samp.test.2", "to receive2");
+	ret = Redis_Publish(client_pubsub_2, "samp.test.2", "to receive2");
 	printf("ret: %d", ret);
 	ASSERT(ret == 0);
 }
 
 TestClose:MultiMessage()
 {
-	Redis_Disconnect(client_bind_2);
+	// Redis_Unsubscribe(pubsub_2);
 }
 
 forward Receive2(data[]);
@@ -267,80 +269,4 @@ public Receive2(data[])
 
 	else
 		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive2' returned the incorrect value: '%s'", data);
-}
-
-
-// -
-// Bind a callback to a message channel and wait a little for a reply.
-// -
-
-new Redis:client_bind_3;
-TestInit:DeferredMessage()
-{
-	new ret = Redis_Connect("localhost", 6379, "", client_bind_3);
-	ASSERT(ret == 0);
-}
-
-Test:DeferredMessage()
-{
-	new ret = Redis_BindMessage(client_bind_3, "samp.test.3", "ReceiveLater");
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-
-	SetTimer("SendLater", 3000, false);
-}
-
-forward SendLater();
-public SendLater()
-{
-	new ret = Redis_SendMessage(client_bind_3, "samp.test.3", "is anyone there?");
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-}
-
-forward ReceiveLater(data[]);
-public ReceiveLater(data[])
-{
-	if(!strcmp(data, "is anyone there?"))
-		printf("\n\nPASS!\n\n*** Redis bind message callback 'ReceiveLater' returned the correct value: '%s' test passed!", data);
-
-	else
-		printf("\n\nFAIL!\n\n*** Redis bind message callback 'ReceiveLater' returned the incorrect value: '%s'", data);
-}
-
-
-// -
-// Set a hash and check the get value
-// -
-
-new Redis:client_hash_1;
-TestInit:SetThenGetHashValue()
-{
-	new ret = Redis_Connect("localhost", 6379, "", client_hash_1);
-	ASSERT(ret == 0);
-}
-
-Test:SetThenGetHashValue()
-{
-	new ret;
-	new want[32];
-	want = "value";
-
-	ret = Redis_SetHashValue(client_hash_1, "test.hash", "property", want);
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-
-	new got[32];
-
-	ret = Redis_GetHashValue(client_hash_1, "test.hash", "property", got);
-	printf("ret: %d", ret);
-	ASSERT(ret == 0);
-
-	printf("want: '%s' got: '%s'", want, got);
-	ASSERT(!strcmp(want, got));
-}
-
-TestClose:SetThenGetHashValue()
-{
-	Redis_Disconnect(client_hash_1);
 }

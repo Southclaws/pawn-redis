@@ -39,8 +39,8 @@
 #include <vector>
 
 #include <amx/amx2.h>
-#include <cpp_redis/misc/logger.hpp>
 #include <cpp_redis/cpp_redis>
+#include <cpp_redis/misc/logger.hpp>
 
 #include "common.hpp"
 
@@ -78,10 +78,7 @@ int GetInt(int client_id, std::string key, int& value);
 int SetFloat(int client_id, std::string key, float value);
 int GetFloat(int client_id, std::string key, float& value);
 
-int SetHashValue(int client_id, std::string key, std::string inner, std::string value);
-int GetHashValue(int client_id, std::string key, std::string inner, std::string& value);
-
-int Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback);
+int Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback, int& id);
 int Publish(int client_id, std::string channel, std::string message);
 
 int clientFromID(int client_id, cpp_redis::client*& client);
