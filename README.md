@@ -40,5 +40,5 @@ sampctl package install Southclaws/pawn-redis
 Include in your code and begin using the library:
 
 ```pawn
-#include <pawn-redis>
+#include <redis>
 ```
