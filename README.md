@@ -3,8 +3,6 @@
 A powerful Redis plugin granting access to a fast in-memory database and
 asynchronous message channels between other programs.
 
-[If you have no idea what Redis is and why it's so powerful with SA:MP, **click here!**](docs/readme.md)
-
 It's open source and available [here](https://github.com/Southclawss/samp-redis)
 
 ## What Redis Is
