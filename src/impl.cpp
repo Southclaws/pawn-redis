@@ -103,7 +103,7 @@ int Impl::Command(int client_id, std::string command)
         return 1;
     }
 
-    std::vector<std::string> cmd = split(command);
+	std::vector<std::string> cmd = { command };
     auto req = client->send(cmd);
     client->sync_commit();
     auto r = req.get();
