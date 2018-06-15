@@ -1,26 +1,26 @@
 /*==============================================================================
 
 
-	Redis for SA:MP
+    Redis for SA:MP
 
-		Copyright (C) 2016 Barnaby "Southclaws" Keene
+    Copyright (C) 2016 Barnaby "Southclaws" Keene
 
-		This program is free software: you can redistribute it and/or modify it
-		under the terms of the GNU General Public License as published by the
-		Free Software Foundation, either version 3 of the License, or (at your
-		option) any later version.
+    This program is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation, either version 3 of the License, or (at your
+    option) any later version.
 
-		This program is distributed in the hope that it will be useful, but
-		WITHOUT ANY WARRANTY; without even the implied warranty of
-		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-		See the GNU General Public License for more details.
+    This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU General Public License for more details.
 
-		You should have received a copy of the GNU General Public License along
-		with this program.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU General Public License along
+    with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-	Note:
-		This file contains the actual Redis implementation code including the
-		message binding, threading and callback mechanism.
+    Note:
+    This file contains the actual Redis implementation code including the
+    message binding, threading and callback mechanism.
 
 
 ==============================================================================*/
@@ -34,20 +34,20 @@ std::stack<Impl::message> Impl::message_stack;
 std::mutex Impl::message_stack_mutex;
 
 /*
-        Note:
-        Connects to the redis server. Returns negative values on errors, if
-        successful the returned value will represent a pseudo-ID which maps
-        internally to a Redis context.
+    Note:
+    Connects to the redis server. Returns negative values on errors, if
+    successful the returned value will represent a pseudo-ID which maps
+    internally to a Redis context.
 
-        Parameters:
-        - `host[]`: hostname or ip of redis server
-        - `port`: port number for redis server
-        - `timeout`: connection timeout window
+    Parameters:
+    - `host[]`: hostname or ip of redis server
+    - `port`: port number for redis server
+    - `timeout`: connection timeout window
 
-        Return values:
-        - `0...`: Redis context ID
-        - `-1`: generic error
-        - `-2`: cannot allocate redis context
+    Return values:
+    - `0...`: Redis context ID
+    - `-1`: generic error
+    - `-2`: cannot allocate redis context
 */
 int Impl::Connect(std::string host, int port, std::string auth, int& id)
 {
@@ -103,7 +103,7 @@ int Impl::Command(int client_id, std::string command)
         return 1;
     }
 
-	std::vector<std::string> cmd = { command };
+    std::vector<std::string> cmd = split(command);
     auto req = client->send(cmd);
     client->sync_commit();
     auto r = req.get();
@@ -315,19 +315,13 @@ int Impl::Publish(int client_id, std::string channel, std::string data)
         return 1;
     }
 
-    logprintf("publishing");
     auto req = client->publish(channel, data);
-    logprintf("sync");
     client->sync_commit();
-    logprintf("get r");
     auto r = req.get();
-    logprintf("got r");
     if (r.is_error()) {
-        logprintf("err");
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
     }
-    logprintf("end");
 
     return 0;
 }
@@ -349,9 +343,9 @@ void Impl::amx_tick(AMX* amx)
 
             if (error == AMX_ERR_NONE) {
                 /*
-                Note:
-                This is the part that calls the Pawn callback!
-                */
+				Note:
+				This is the part that calls the Pawn callback!
+				*/
                 amx_Push(amx, m.msg.length());
                 amx_PushString(amx, &amx_addr, &phys_addr, m.msg.c_str(), 0, 0);
 
@@ -400,13 +394,15 @@ int Impl::clientDataFromID(int client_id, clientData& cd)
     return 0;
 }
 
-std::vector<std::string> Impl::split(const std::string& s)
+std::vector<std::string> Impl::split(const std::string s)
 {
     std::vector<std::string> result;
     std::istringstream iss(s);
-    std::copy(std::istream_iterator<std::string>(iss),
-        std::istream_iterator<std::string>(),
-        back_inserter(result));
+    std::string tmp;
+
+    while (iss >> std::quoted(tmp)) {
+        result.push_back(tmp);
+    }
 
     return result;
 }

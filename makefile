@@ -14,6 +14,13 @@ redis:
 		--publish 6379:6379 \
 		--detach \
 		redis
+
+redis-ui:
+	echo "requires npm install -g redis-commander"
+	redis-commander \
+		--redis-host=localhost \
+		--redis-port=6379
+
 # -
 # Run Tests
 # -

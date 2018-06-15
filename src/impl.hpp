@@ -37,6 +37,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <iomanip>
 
 #include <amx/amx2.h>
 #include <cpp_redis/cpp_redis>
@@ -84,7 +85,7 @@ int Publish(int client_id, std::string channel, std::string message);
 int clientFromID(int client_id, cpp_redis::client*& client);
 int clientDataFromID(int client_id, clientData& client);
 void amx_tick(AMX* amx);
-std::vector<std::string> split(const std::string& s);
+std::vector<std::string> split(const std::string s);
 
 extern int context_count;
 extern std::map<int, clientData> clients;

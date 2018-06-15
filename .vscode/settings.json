@@ -27,6 +27,11 @@
         "deque": "cpp",
         "map": "cpp",
         "unordered_map": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "list": "cpp",
+        "xhash": "cpp",
+        "xtree": "cpp",
+        "xiosbase": "cpp",
+        "xutility": "cpp"
     }
 }

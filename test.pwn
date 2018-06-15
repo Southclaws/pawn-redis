@@ -11,7 +11,7 @@ Test:ConnectDisconnect()
 	new Redis:client;
 	new ret;
 	
-	ret = Redis_Connect("localhost", 6379, "", Redis:client);
+	ret = Redis_Connect("localhost", 6379, "", client);
 	printf("client: %d", _:client);
 	ASSERT(client != Redis:-1);
 
@@ -183,6 +183,30 @@ Test:SetThenGetFloat()
 TestClose:SetThenGetFloat()
 {
 	Redis_Disconnect(client_setgetfloat);
+}
+
+
+// -
+// Run A Command
+// -
+
+new Redis:client_runCommand;
+TestInit:RunCommand()
+{
+	new ret = Redis_Connect("localhost", 6379, "", client_runCommand);
+	ASSERT(ret == 0);
+}
+
+Test:RunCommand()
+{
+	new ret = Redis_Command(client_runCommand, "LPUSH test_list \"Hello World\"");
+	printf("ret: %d", ret);
+	ASSERT(ret == 0);
+}
+
+TestClose:RunCommand()
+{
+	Redis_Disconnect(client_runCommand);
 }
 
 
