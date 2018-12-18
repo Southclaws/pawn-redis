@@ -3,7 +3,7 @@
 A powerful Redis plugin granting access to a fast in-memory database and
 asynchronous message channels between other programs.
 
-It's open source and available [here](https://github.com/Southclawss/samp-redis)
+It's open source and available [here](https://github.com/Southclawss/pawn-redis)
 
 ## What Redis Is
 
