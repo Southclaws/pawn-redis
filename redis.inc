@@ -39,17 +39,17 @@
 #define REDIS_REPLY_STATUS					(5)
 #define REDIS_REPLY_ERROR					(6)
 
-native Redis_Connect(host[], port, auth[], &Redis:client);
+native Redis_Connect(const host[], port, const auth[], &Redis:client);
 native Redis_Disconnect(Redis:client);
 
-native Redis_Command(Redis:client, command[]);
-native Redis_Exists(Redis:client, key[]);
-native Redis_SetString(Redis:client, key[], value[]);
-native Redis_GetString(Redis:client, key[], value[], len = sizeof(value));
-native Redis_SetInt(Redis:client, key[], value);
-native Redis_GetInt(Redis:client, key[], &value);
-native Redis_SetFloat(Redis:client, key[], Float:value);
-native Redis_GetFloat(Redis:client, key[], &Float:value);
+native Redis_Command(Redis:client, const command[]);
+native Redis_Exists(Redis:client, const key[]);
+native Redis_SetString(Redis:client, const key[], value[]);
+native Redis_GetString(Redis:client, const key[], value[], len = sizeof(value));
+native Redis_SetInt(Redis:client, const key[], value);
+native Redis_GetInt(Redis:client, const key[], &value);
+native Redis_SetFloat(Redis:client, const key[], Float:value);
+native Redis_GetFloat(Redis:client, const key[], &Float:value);
 
 native Redis_Subscribe(const host[], port, const auth[], const channel[], const callback[], &PubSub:client);
 native Redis_Publish(Redis:client, const channel[], const data[]);
