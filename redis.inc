@@ -21,6 +21,14 @@
 
 ==============================================================================*/
 
+#if defined _inc_redis
+    #undef _inc_redis
+#endif
+
+#if defined _redis_included
+    #endinput
+#endif
+#define _redis_included
 
 #define REDIS_ERROR_CONNECT_GENERIC			(-1)
 #define REDIS_ERROR_CONNECT_FAIL			(-2)
