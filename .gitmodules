@@ -9,7 +9,7 @@
 	url = https://github.com/Y-Less/plugin-natives
 [submodule "lib/cpp_redis"]
 	path = lib/cpp_redis
-	url = https://github.com/Cylix/cpp_redis
+	url = https://github.com/cpp-redis/cpp_redis
 [submodule "lib/tacopie"]
 	path = lib/tacopie
 	url = https://github.com/Cylix
