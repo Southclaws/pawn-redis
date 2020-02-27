@@ -294,6 +294,8 @@ int Impl::Subscribe(std::string host, int port, std::string auth, std::string ch
         message_stack_mutex.unlock();
     });
 
+    sub->commit();
+
     clientData cd;
     cd.subscriber = sub;
     cd.host = host;
