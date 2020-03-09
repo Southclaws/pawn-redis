@@ -59,6 +59,7 @@ cell SetFloat(AMX* amx, cell* params);
 cell GetFloat(AMX* amx, cell* params);
 
 cell Subscribe(AMX* amx, cell* params);
+cell Unsubscribe(AMX* amx, cell* params);
 cell Publish(AMX* amx, cell* params);
 };
 

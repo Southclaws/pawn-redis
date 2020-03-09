@@ -60,4 +60,5 @@ native Redis_SetFloat(Redis:client, const key[], Float:value);
 native Redis_GetFloat(Redis:client, const key[], &Float:value);
 
 native Redis_Subscribe(const host[], port, const auth[], const channel[], const callback[], &PubSub:client);
+native Redis_Unsubscribe(PubSub:client);
 native Redis_Publish(Redis:client, const channel[], const data[]);

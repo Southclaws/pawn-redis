@@ -166,6 +166,11 @@ cell Natives::Subscribe(AMX* amx, cell* params)
     return Impl::Subscribe(host, port, auth, channel, callback, *addr);
 }
 
+cell Natives::Unsubscribe(AMX* amx, cell* params)
+{
+    return Impl::Unsubscribe(params[1]);
+}
+
 cell Natives::Publish(AMX* amx, cell* params)
 {
     int pubsub_id = params[1];

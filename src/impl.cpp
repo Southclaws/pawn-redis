@@ -298,6 +298,7 @@ int Impl::Subscribe(std::string host, int port, std::string auth, std::string ch
 
     clientData cd;
     cd.subscriber = sub;
+    cd.channel = channel;
     cd.host = host;
     cd.port = port;
     cd.auth = auth;
@@ -305,6 +306,22 @@ int Impl::Subscribe(std::string host, int port, std::string auth, std::string ch
     clients[context_count] = cd;
 
     id = context_count++;
+
+    return 0;
+}
+
+int Impl::Unsubscribe(int id)
+{
+    clientData cd;
+
+    int err = clientDataFromID(id, cd);
+    if (err) {
+        return 1;
+    }
+
+    cd.subscriber->unsubscribe(cd.channel);
+    
+    clients.erase(id);
 
     return 0;
 }

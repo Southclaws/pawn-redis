@@ -52,6 +52,7 @@ struct clientData {
     std::string host;
     int port;
     std::string auth;
+	std::string channel;
     bool isPubSub;
     cpp_redis::subscriber* subscriber;
 };
@@ -80,6 +81,7 @@ int SetFloat(int client_id, std::string key, float value);
 int GetFloat(int client_id, std::string key, float& value);
 
 int Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback, int& id);
+int Unsubscribe(int id);
 int Publish(int client_id, std::string channel, std::string message);
 
 int clientFromID(int client_id, cpp_redis::client*& client);
