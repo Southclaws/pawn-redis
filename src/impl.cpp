@@ -320,6 +320,7 @@ int Impl::Unsubscribe(int id)
     }
 
     cd.subscriber->unsubscribe(cd.channel);
+    cd.subscriber->commit();
     
     clients.erase(id);
 
