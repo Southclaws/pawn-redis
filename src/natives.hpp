@@ -58,6 +58,14 @@ cell GetInt(AMX* amx, cell* params);
 cell SetFloat(AMX* amx, cell* params);
 cell GetFloat(AMX* amx, cell* params);
 
+cell SetHString(AMX* amx, cell* params);
+cell SetHInt(AMX* amx, cell* params);
+cell GetHString(AMX* amx, cell* params);
+cell HExists(AMX* amx, cell* params);
+cell HIncrBy(AMX* amx, cell* params);
+cell HIncrByFloat(AMX* amx, cell* params);
+cell HDel(AMX* amx, cell* params);
+
 cell Subscribe(AMX* amx, cell* params);
 cell Unsubscribe(AMX* amx, cell* params);
 cell Publish(AMX* amx, cell* params);

@@ -80,8 +80,15 @@ int GetInt(int client_id, std::string key, int& value);
 int SetFloat(int client_id, std::string key, float value);
 int GetFloat(int client_id, std::string key, float& value);
 
+int SetHString(int client_id, std::string key, std::string field, std::string value);
+int GetHString(int client_id, std::string key, std::string field, std::string& value);
+int HExists(int client_id, std::string key, std::string field);
+int HIncrBy(int client_id, std::string key, std::string field, int incr);
+int HIncrByFloat(int client_id, std::string key, std::string field, float incr);
+int HDel(int client_id, std::string key, std::string field);
+
 int Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback, int& id);
-int Unsubscribe(int id);
+int Unsubscribe(int client_id);
 int Publish(int client_id, std::string channel, std::string message);
 
 int clientFromID(int client_id, cpp_redis::client*& client);

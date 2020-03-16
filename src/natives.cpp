@@ -153,6 +153,80 @@ cell Natives::GetFloat(AMX* amx, cell* params)
     return ret;
 }
 
+cell Natives::SetHString(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+    string value = amx_GetCppString(amx, params[4]);
+
+    return Impl::SetHString(context_id, key, field, value);
+}
+
+cell Natives::SetHInt(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+    int value = params[4];
+    
+    return Impl::SetHString(context_id, key, field, std::to_string(value));
+}
+
+cell Natives::GetHString(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+    string value;
+
+    int ret;
+    ret = Impl::GetHString(context_id, key, field, value);
+
+    amx_SetCppString(amx, params[4], value, params[5]);
+
+    return ret;
+}
+
+cell Natives::HExists(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+
+    return Impl::HExists(context_id, key, field);
+}
+
+cell Natives::HDel(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+
+    return Impl::HDel(context_id, key, field);
+}
+
+cell Natives::HIncrBy(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+    int incr = params[4];
+
+    return Impl::HIncrBy(context_id, key, field, incr); 
+}
+
+cell Natives::HIncrByFloat(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+    float incr = *(float*)&params[4];
+
+    return Impl::HIncrByFloat(context_id, key, field, incr); 
+}
+
+
 cell Natives::Subscribe(AMX* amx, cell* params)
 {
     string host = amx_GetCppString(amx, params[1]);

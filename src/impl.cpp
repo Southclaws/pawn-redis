@@ -274,6 +274,132 @@ int Impl::GetFloat(int client_id, std::string key, float& value)
     return 0;
 }
 
+int Impl::SetHString(int client_id, std::string key, std::string field, std::string value)
+{
+    cpp_redis::client* client;
+    int err = clientFromID(client_id, client);
+    if (err) {
+        return 1;
+    }
+
+    auto req = client->hset(key, field, value);
+    client->sync_commit();
+    auto r = req.get();
+
+    if (r.is_error()) {
+        logprintf("ERROR: %s", r.error().c_str());
+        return 1;
+    }
+
+    return 0;
+}
+
+int Impl::GetHString(int client_id, std::string key, std::string field, std::string& value)
+{
+    cpp_redis::client* client;
+    int err = clientFromID(client_id, client);
+    if (err) {
+        return 1;
+    }
+
+    auto req = client->hget(key, field);
+    client->sync_commit();
+    auto r = req.get();
+
+    if (r.is_error()) {
+        logprintf("ERROR: %s", r.error().c_str());
+        return 1;
+    } else if (r.get_type() == cpp_redis::reply::type::null) {
+        return 2;
+    } else if (r.get_type() != cpp_redis::reply::type::bulk_string) {
+        return 3;
+    } else {
+        value = r.as_string();
+    }
+
+    return 0;
+}
+
+int Impl::HDel(int client_id, std::string key, std::string field)
+{
+    cpp_redis::client* client;
+    int err = clientFromID(client_id, client);
+    if (err) {
+        return 1;
+    }
+
+    auto req = client->hdel(key, std::vector<std::string>{ field });
+    client->sync_commit();
+    auto r = req.get();
+    
+    if (r.is_error()) {
+        logprintf("ERROR: %s", r.error().c_str());
+        return 2;
+    }
+
+    return 0;
+}
+
+int Impl::HExists(int client_id, std::string key, std::string field)
+{
+    cpp_redis::client* client;
+    int err = clientFromID(client_id, client);
+    if (err) {
+        return 1;
+    }
+
+    auto req = client->hexists(key, field);
+    client->sync_commit();
+    auto r = req.get();
+
+    if (r.is_error()) {
+        logprintf("ERROR: %s", r.error().c_str());
+        return 0;
+    }
+
+    return static_cast<int>(r.as_integer());
+}
+
+int Impl::HIncrBy(int client_id, std::string key, std::string field, int incr)
+{
+    cpp_redis::client* client;
+    int err = clientFromID(client_id, client);
+    if (err) {
+        return 1;
+    }
+
+    auto req = client->hincrby(key, field, incr);
+    client->sync_commit();
+    auto r = req.get();
+
+    if (r.is_error()) {
+        logprintf("ERROR: %s", r.error().c_str());
+        return 1;
+    }
+
+    return 0;
+}
+
+int Impl::HIncrByFloat(int client_id, std::string key, std::string field, float incr)
+{
+    cpp_redis::client* client;
+    int err = clientFromID(client_id, client);
+    if (err) {
+        return 1;
+    }
+
+    auto req = client->hincrbyfloat(key, field, incr);
+    client->sync_commit();
+    auto r = req.get();
+
+    if (r.is_error()) {
+        logprintf("ERROR: %s", r.error().c_str());
+        return 1;
+    }
+
+    return 0;
+}
+
 int Impl::Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback, int& id)
 {
     cpp_redis::subscriber* sub = new cpp_redis::subscriber();
@@ -310,11 +436,11 @@ int Impl::Subscribe(std::string host, int port, std::string auth, std::string ch
     return 0;
 }
 
-int Impl::Unsubscribe(int id)
+int Impl::Unsubscribe(int client_id)
 {
     clientData cd;
 
-    int err = clientDataFromID(id, cd);
+    int err = clientDataFromID(client_id, cd);
     if (err) {
         return 1;
     }
@@ -322,7 +448,7 @@ int Impl::Unsubscribe(int id)
     cd.subscriber->unsubscribe(cd.channel);
     cd.subscriber->commit();
     
-    clients.erase(id);
+    clients.erase(client_id);
 
     return 0;
 }

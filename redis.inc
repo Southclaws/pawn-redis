@@ -59,6 +59,12 @@ native Redis_GetInt(Redis:client, const key[], &value);
 native Redis_SetFloat(Redis:client, const key[], Float:value);
 native Redis_GetFloat(Redis:client, const key[], &Float:value);
 
+native Redis_SetHString(Redis::client, const key[], const field[], value[]);
+native Redis_SetHInt(Redis::client, const key[], const field[], value);
+native Redis_GetHString(Redis::client, const key[], const field[], &value);
+native Redis_HExists(Redis::client, const key[], const field[]);
+native Redis_HDel(Redis::client, const key[], const field[]);
+
 native Redis_Subscribe(const host[], port, const auth[], const channel[], const callback[], &PubSub:client);
 native Redis_Unsubscribe(PubSub:client);
 native Redis_Publish(Redis:client, const channel[], const data[]);
