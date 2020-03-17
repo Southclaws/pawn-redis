@@ -66,7 +66,7 @@ native Redis_GetHInt(Redis::client, const key[], const field[]);
 native Redis_HExists(Redis:client, const key[], const field[]);
 native Redis_HDel(Redis:client, const key[], const field[]);
 native Redis_HIncrBy(Redis:client, const key[], const field[], incr);
-native Redis_HIncrByFloat(Redis:client, const key[], const field[], incr);
+native Redis_HIncrByFloat(Redis:client, const key[], const field[], Float:incr);
 
 native Redis_Subscribe(const host[], port, const auth[], const channel[], const callback[], &PubSub:client);
 native Redis_Unsubscribe(PubSub:client);
