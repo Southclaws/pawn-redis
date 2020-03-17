@@ -188,6 +188,19 @@ cell Natives::GetHString(AMX* amx, cell* params)
     return ret;
 }
 
+cell Natives::GetHInt(AMX* amx, cell* params)
+{
+    int context_id = params[1];
+    string key = amx_GetCppString(amx, params[2]);
+    string field = amx_GetCppString(amx, params[3]);
+    string value;
+
+    int ret;
+    ret = Impl::GetHString(context_id, key, field, value);
+
+    return std::atoi(value.c_str());
+}
+
 cell Natives::HExists(AMX* amx, cell* params)
 {
     int context_id = params[1];

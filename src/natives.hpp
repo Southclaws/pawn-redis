@@ -61,6 +61,7 @@ cell GetFloat(AMX* amx, cell* params);
 cell SetHString(AMX* amx, cell* params);
 cell SetHInt(AMX* amx, cell* params);
 cell GetHString(AMX* amx, cell* params);
+cell GetHInt(AMX* amx, cell* params);
 cell HExists(AMX* amx, cell* params);
 cell HIncrBy(AMX* amx, cell* params);
 cell HIncrByFloat(AMX* amx, cell* params);
