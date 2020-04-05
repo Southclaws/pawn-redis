@@ -52,12 +52,7 @@ std::mutex Impl::message_stack_mutex;
 int Impl::Connect(std::string host, int port, std::string auth, int& id)
 {
     cpp_redis::client* client = new cpp_redis::client();
-    try {
-        client->connect(host, port);
-    } catch (cpp_redis::redis_error e) {
-        logprintf("ERROR: %s", e.what());
-        return 1;
-    }
+    client->connect(host, port);
 
     if (auth.length() > 0) {
         auto req = client->auth(auth);

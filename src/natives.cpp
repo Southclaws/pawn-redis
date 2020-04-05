@@ -53,16 +53,26 @@ cell Natives::Connect(AMX* amx, cell* params)
     cell* addr;
     amx_GetAddr(amx, params[4], &addr);
 
-    int ret = Impl::Connect(hostname, port, auth, *addr);
-
-    return ret;
+    try {
+        return Impl::Connect(hostname, port, auth, *addr);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::Disconnect(AMX* amx, cell* params)
 {
     int context_id = params[1];
 
-    return Impl::Disconnect(context_id);
+    try {
+        return Impl::Disconnect(context_id);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::Command(AMX* amx, cell* params)
@@ -70,7 +80,13 @@ cell Natives::Command(AMX* amx, cell* params)
     int context_id = params[1];
     string command = amx_GetCppString(amx, params[2]);
 
-    return Impl::Command(context_id, command);
+    try {
+        return Impl::Command(context_id, command);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::Exists(AMX* amx, cell* params)
@@ -78,7 +94,13 @@ cell Natives::Exists(AMX* amx, cell* params)
     int context_id = params[1];
     string key = amx_GetCppString(amx, params[2]);
 
-    return Impl::Exists(context_id, key);
+    try {
+        return Impl::Exists(context_id, key);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::SetString(AMX* amx, cell* params)
@@ -87,7 +109,13 @@ cell Natives::SetString(AMX* amx, cell* params)
     string key = amx_GetCppString(amx, params[2]);
     string value = amx_GetCppString(amx, params[3]);
 
-    return Impl::SetString(context_id, key, value);
+    try {
+        return Impl::SetString(context_id, key, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::GetString(AMX* amx, cell* params)
@@ -97,7 +125,13 @@ cell Natives::GetString(AMX* amx, cell* params)
     string value;
     int ret;
 
-    ret = Impl::GetString(context_id, key, value);
+    try {
+        ret = Impl::GetString(context_id, key, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
     amx_SetCppString(amx, params[3], value, params[4]);
 
     return ret;
@@ -109,7 +143,13 @@ cell Natives::SetInt(AMX* amx, cell* params)
     string key = amx_GetCppString(amx, params[2]);
     int value = params[3];
 
-    return Impl::SetInt(context_id, key, value);
+    try {
+        return Impl::SetInt(context_id, key, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::GetInt(AMX* amx, cell* params)
@@ -119,7 +159,13 @@ cell Natives::GetInt(AMX* amx, cell* params)
     int value;
     int ret;
 
-    ret = Impl::GetInt(context_id, key, value);
+    try {
+        ret = Impl::GetInt(context_id, key, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 0;
+    }
 
     cell* address;
     amx_GetAddr(amx, params[3], &address);
@@ -134,7 +180,13 @@ cell Natives::SetFloat(AMX* amx, cell* params)
     string key = amx_GetCppString(amx, params[2]);
     float value = *(float*)&params[3]; // weird float conversion
 
-    return Impl::SetFloat(context_id, key, value);
+    try {
+        return Impl::SetFloat(context_id, key, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::GetFloat(AMX* amx, cell* params)
@@ -144,7 +196,13 @@ cell Natives::GetFloat(AMX* amx, cell* params)
     float value;
     int ret;
 
-    ret = Impl::GetFloat(context_id, key, value);
+    try {
+        ret = Impl::GetFloat(context_id, key, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 0;
+    }
 
     cell* address;
     amx_GetAddr(amx, params[3], &address);
@@ -160,7 +218,13 @@ cell Natives::SetHString(AMX* amx, cell* params)
     string field = amx_GetCppString(amx, params[3]);
     string value = amx_GetCppString(amx, params[4]);
 
-    return Impl::SetHString(context_id, key, field, value);
+    try {
+        return Impl::SetHString(context_id, key, field, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::SetHInt(AMX* amx, cell* params)
@@ -170,7 +234,13 @@ cell Natives::SetHInt(AMX* amx, cell* params)
     string field = amx_GetCppString(amx, params[3]);
     int value = params[4];
     
-    return Impl::SetHString(context_id, key, field, std::to_string(value));
+    try {
+        return Impl::SetHString(context_id, key, field, std::to_string(value));
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::GetHString(AMX* amx, cell* params)
@@ -181,7 +251,13 @@ cell Natives::GetHString(AMX* amx, cell* params)
     string value;
 
     int ret;
-    ret = Impl::GetHString(context_id, key, field, value);
+    try {
+        ret = Impl::GetHString(context_id, key, field, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 
     amx_SetCppString(amx, params[4], value, params[5]);
 
@@ -196,7 +272,13 @@ cell Natives::GetHInt(AMX* amx, cell* params)
     string value;
 
     int ret;
-    ret = Impl::GetHString(context_id, key, field, value);
+    try {
+        ret = Impl::GetHString(context_id, key, field, value);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 0;
+    }
 
     return std::atoi(value.c_str());
 }
@@ -207,7 +289,13 @@ cell Natives::HExists(AMX* amx, cell* params)
     string key = amx_GetCppString(amx, params[2]);
     string field = amx_GetCppString(amx, params[3]);
 
-    return Impl::HExists(context_id, key, field);
+    try {
+        return Impl::HExists(context_id, key, field);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::HDel(AMX* amx, cell* params)
@@ -216,7 +304,13 @@ cell Natives::HDel(AMX* amx, cell* params)
     string key = amx_GetCppString(amx, params[2]);
     string field = amx_GetCppString(amx, params[3]);
 
-    return Impl::HDel(context_id, key, field);
+    try {
+        return Impl::HDel(context_id, key, field);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::HIncrBy(AMX* amx, cell* params)
@@ -226,7 +320,13 @@ cell Natives::HIncrBy(AMX* amx, cell* params)
     string field = amx_GetCppString(amx, params[3]);
     int incr = params[4];
 
-    return Impl::HIncrBy(context_id, key, field, incr); 
+    try {
+        return Impl::HIncrBy(context_id, key, field, incr); 
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::HIncrByFloat(AMX* amx, cell* params)
@@ -236,7 +336,13 @@ cell Natives::HIncrByFloat(AMX* amx, cell* params)
     string field = amx_GetCppString(amx, params[3]);
     float incr = *(float*)&params[4];
 
-    return Impl::HIncrByFloat(context_id, key, field, incr); 
+    try {
+        return Impl::HIncrByFloat(context_id, key, field, incr); 
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 
@@ -250,12 +356,24 @@ cell Natives::Subscribe(AMX* amx, cell* params)
 
 	cell* addr;
 	amx_GetAddr(amx, params[6], &addr);
-    return Impl::Subscribe(host, port, auth, channel, callback, *addr);
+    try {
+        return Impl::Subscribe(host, port, auth, channel, callback, *addr);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::Unsubscribe(AMX* amx, cell* params)
 {
-    return Impl::Unsubscribe(params[1]);
+    try {
+        return Impl::Unsubscribe(params[1]);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
 
 cell Natives::Publish(AMX* amx, cell* params)
@@ -264,5 +382,11 @@ cell Natives::Publish(AMX* amx, cell* params)
     string channel = amx_GetCppString(amx, params[2]);
     string message = amx_GetCppString(amx, params[3]);
 
-    return Impl::Publish(pubsub_id, channel, message);
+    try {
+        return Impl::Publish(pubsub_id, channel, message);
+    }
+    catch (cpp_redis::redis_error e) {
+        logprintf("ERROR: %s", e.what());
+        return 1;
+    }
 }
