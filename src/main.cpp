@@ -95,9 +95,7 @@ PLUGIN_EXPORT void PLUGIN_CALL Unload()
 
 PLUGIN_EXPORT void PLUGIN_CALL ProcessTick()
 {
-    for (AMX* i : amx_list) {
-        Impl::amx_tick(i);
-    }
+    Impl::amx_tick();
 }
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX* amx)

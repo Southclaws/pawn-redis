@@ -357,7 +357,7 @@ cell Natives::Subscribe(AMX* amx, cell* params)
 	cell* addr;
 	amx_GetAddr(amx, params[6], &addr);
     try {
-        return Impl::Subscribe(host, port, auth, channel, callback, *addr);
+        return Impl::Subscribe(amx, host, port, auth, channel, callback, *addr);
     }
     catch (cpp_redis::redis_error e) {
         logprintf("ERROR: %s", e.what());

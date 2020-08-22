@@ -395,7 +395,7 @@ int Impl::HIncrByFloat(int client_id, std::string key, std::string field, float 
     return 0;
 }
 
-int Impl::Subscribe(std::string host, int port, std::string auth, std::string channel, std::string callback, int& id)
+int Impl::Subscribe(AMX* amx, std::string host, int port, std::string auth, std::string channel, std::string callback, int& id)
 {
     cpp_redis::subscriber* sub = new cpp_redis::subscriber();
     sub->connect(host, port);
@@ -404,8 +404,9 @@ int Impl::Subscribe(std::string host, int port, std::string auth, std::string ch
         sub->auth(auth);
     }
 
-    sub->subscribe(channel, [callback](const std::string& chan, const std::string& msg) {
+    sub->subscribe(channel, [amx, callback](const std::string& chan, const std::string& msg) {
         message m;
+        m.amx = amx;
         m.channel = chan;
         m.msg = msg;
         m.callback = callback;
@@ -467,7 +468,7 @@ int Impl::Publish(int client_id, std::string channel, std::string data)
     return 0;
 }
 
-void Impl::amx_tick(AMX* amx)
+void Impl::amx_tick()
 {
     if (message_stack_mutex.try_lock()) {
         message m;
@@ -479,6 +480,8 @@ void Impl::amx_tick(AMX* amx)
 
         while (!message_stack.empty()) {
             m = message_stack.top();
+
+            AMX* amx = m.amx;
 
             error = amx_FindPublic(amx, m.callback.c_str(), &amx_idx);
 
