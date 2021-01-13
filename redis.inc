@@ -52,14 +52,14 @@ native Redis_Disconnect(Redis:client);
 
 native Redis_Command(Redis:client, const command[]);
 native Redis_Exists(Redis:client, const key[]);
-native Redis_SetString(Redis:client, const key[], value[]);
+native Redis_SetString(Redis:client, const key[], const value[]);
 native Redis_GetString(Redis:client, const key[], value[], len = sizeof(value));
 native Redis_SetInt(Redis:client, const key[], value);
 native Redis_GetInt(Redis:client, const key[], &value);
 native Redis_SetFloat(Redis:client, const key[], Float:value);
 native Redis_GetFloat(Redis:client, const key[], &Float:value);
 
-native Redis_SetHString(Redis:client, const key[], const field[], value[]);
+native Redis_SetHString(Redis:client, const key[], const field[], const value[]);
 native Redis_SetHInt(Redis:client, const key[], const field[], value);
 native Redis_GetHString(Redis:client, const key[], const field[], value[], len = sizeof(value));
 native Redis_GetHInt(Redis:client, const key[], const field[]);
