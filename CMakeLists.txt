@@ -8,6 +8,14 @@ if(UNIX)
 	set(CMAKE_CXX_FLAGS "-m32 -fvisibility=hidden -std=c++14")
 	set(CMAKE_C_FLAGS "-m32 -fvisibility=hidden")
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+
+	# link runtime statically
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+	add_link_options(
+		"-static-libgcc"
+		"-static-libstdc++"
+	)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN'")
 else()
 	set(MSVC_RUNTIME_LIBRARY_CONFIG "/MD")
 endif()
