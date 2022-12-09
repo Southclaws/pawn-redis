@@ -1,0 +1,19 @@
+version: "3"
+tasks:
+  default:
+    dir: build
+    cmds:
+      - task: apply-patch
+      - cmake .. -DCMAKE_BUILD_TYPE=Release
+      - cmake --build . --config Release
+      - task: undo-patch
+
+  apply-patch:
+    dir: ./lib/cpp_redis
+    cmds:
+      - git apply ../../patches/fix-missing-thread-include.patch
+
+  undo-patch:
+    dir: ./lib/cpp_redis
+    cmds:
+      - git apply -R ../../patches/fix-missing-thread-include.patch
