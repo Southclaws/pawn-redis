@@ -3,14 +3,14 @@
 #define RUN_TESTS
 
 #include <a_samp>
-#include <YSI\y_testing>
+#include <YSI_Core\y_testing>
 
 
 Test:ConnectDisconnect()
 {
 	new Redis:client;
 	new ret;
-	
+
 	ret = Redis_Connect("localhost", 6379, "", client);
 	printf("client: %d", _:client);
 	ASSERT(client != Redis:-1);
@@ -256,7 +256,7 @@ new PubSub:pubsub_2;
 new Redis:client_pubsub_2;
 TestInit:MultiMessage()
 {
-	new ret = Redis_Subscribe("localhost", 6379, "", "samp.test.2", "Receive", pubsub_2);
+	new ret = Redis_Subscribe("localhost", 6379, "", "samp.test.2", "Receive2", pubsub_2);
 	ASSERT(ret == 0);
 
 	ret = Redis_Connect("localhost", 6379, "", client_pubsub_2);
