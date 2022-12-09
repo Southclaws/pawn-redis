@@ -1,0 +1,14 @@
+site: ""
+user: southclaws
+repo: pawn-redis
+tag: 0.0.1
+entry: ../test.pwn
+output: gamemodes/test.amx
+local: true
+dependencies:
+  - pawn-lang/samp-stdlib
+  - pawn-lang/YSI-Includes@5.x
+runtime:
+  mode: y_testing
+  plugins:
+      - pawn-redis
