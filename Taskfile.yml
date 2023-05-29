@@ -1,12 +1,38 @@
 version: "3"
 tasks:
   default:
+    cmds:
+      - task: build
+      - task: test
+
+  build:
     dir: build
     cmds:
       - task: apply-patch
+      - defer: { task: undo-patch }
       - cmake .. -DCMAKE_BUILD_TYPE=Release
       - cmake --build . --config Release
-      - task: undo-patch
+    sources:
+      - ../src/**/*.hpp
+      - ../src/**/*.cpp
+    generates:
+      - ../test/plugins/pawn-redis.so
+
+  build:test:
+    dir: test
+    cmds:
+      - sampctl ensure
+      - sampctl build
+    sources:
+      - ../test.pwn
+    generates:
+      - gamemodes/test.amx
+
+  test:
+    dir: test
+    deps: [build:test]
+    cmds:
+      - sampctl run
 
   apply-patch:
     dir: ./lib/cpp_redis

@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.embeddedhtml": "html",
         "__config": "cpp",
         "__nullptr": "cpp",
         "exception": "cpp",
@@ -32,6 +33,7 @@
         "xhash": "cpp",
         "xtree": "cpp",
         "xiosbase": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "thread": "cpp"
     }
 }
