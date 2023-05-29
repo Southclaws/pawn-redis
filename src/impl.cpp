@@ -326,7 +326,7 @@ int Impl::HDel(int client_id, std::string key, std::string field)
     auto req = client->hdel(key, std::vector<std::string>{ field });
     client->sync_commit();
     auto r = req.get();
-    
+
     if (r.is_error()) {
         logprintf("ERROR: %s", r.error().c_str());
         return 2;
@@ -404,8 +404,20 @@ int Impl::Subscribe(AMX* amx, std::string host, int port, std::string auth, std:
         sub->auth(auth);
     }
 
-    sub->subscribe(channel, [amx, callback](const std::string& chan, const std::string& msg) {
+    clientData cd;
+    cd.subscriber = sub;
+    cd.channel = channel;
+    cd.host = host;
+    cd.port = port;
+    cd.auth = auth;
+    cd.isPubSub = true;
+    clients[context_count] = cd;
+
+    id = context_count++;
+
+    sub->subscribe(channel, [id, amx, callback](const std::string& chan, const std::string& msg) {
         message m;
+        m.clientId = id;
         m.amx = amx;
         m.channel = chan;
         m.msg = msg;
@@ -417,17 +429,6 @@ int Impl::Subscribe(AMX* amx, std::string host, int port, std::string auth, std:
     });
 
     sub->commit();
-
-    clientData cd;
-    cd.subscriber = sub;
-    cd.channel = channel;
-    cd.host = host;
-    cd.port = port;
-    cd.auth = auth;
-    cd.isPubSub = true;
-    clients[context_count] = cd;
-
-    id = context_count++;
 
     return 0;
 }
@@ -443,7 +444,7 @@ int Impl::Unsubscribe(int client_id)
 
     cd.subscriber->unsubscribe(cd.channel);
     cd.subscriber->commit();
-    
+
     clients.erase(client_id);
 
     return 0;
@@ -492,6 +493,7 @@ void Impl::amx_tick()
 				*/
                 amx_Push(amx, m.msg.length());
                 amx_PushString(amx, &amx_addr, &phys_addr, m.msg.c_str(), 0, 0);
+                amx_Push(amx, m.clientId);
 
                 amx_Exec(amx, &amx_ret, amx_idx);
                 amx_Release(amx, amx_addr);

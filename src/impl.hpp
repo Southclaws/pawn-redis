@@ -63,6 +63,7 @@ struct subscription {
 };
 
 struct message {
+	int clientId;
     std::string channel;
     std::string msg;
     std::string callback;

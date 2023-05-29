@@ -232,19 +232,17 @@ Test:MessageBindReply()
 	ASSERT(ret == 0);
 }
 
-TestClose:MessageBindReply()
+forward Receive(PubSub:id, data[]);
+public Receive(PubSub:id, data[])
 {
-	// Redis_Unsubscribe(pubsub_1);
-}
-
-forward Receive(data[]);
-public Receive(data[])
-{
+	ASSERT(id == pubsub_1);
 	if(!strcmp(data, "hello world!")) {
 		printf("\n\nPASS!\n\n*** Redis bind message callback 'Receive' returned the correct value: '%s' test passed!", data);
 	} else {
 		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive' returned the incorrect value: '%s'", data);
 	}
+
+	Redis_Unsubscribe(pubsub_1);
 }
 
 
@@ -280,17 +278,16 @@ Test:MultiMessage()
 	ASSERT(ret == 0);
 }
 
-TestClose:MultiMessage()
+forward Receive2(PubSub:id, data[]);
+public Receive2(PubSub:id, data[])
 {
-	// Redis_Unsubscribe(pubsub_2);
-}
+	ASSERT(id == pubsub_2);
 
-forward Receive2(data[]);
-public Receive2(data[])
-{
 	if(!strcmp(data, "to receive2"))
 		printf("\n\nPASS!\n\n*** Redis bind message callback 'Receive2' returned the correct value: '%s' test passed!", data);
 
 	else
 		printf("\n\nFAIL!\n\n*** Redis bind message callback 'Receive2' returned the incorrect value: '%s'", data);
+
+	Redis_Unsubscribe(pubsub_2);
 }
